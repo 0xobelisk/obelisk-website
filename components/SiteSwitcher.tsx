@@ -2,7 +2,7 @@ import cn from "classnames";
 import { useRouter } from "next/router";
 import Link from "next/link";
 
-export type TurboSite = "pack" | "repo";
+export type TurboSite = "engine" | "repo";
 
 export function useTurboSite(): TurboSite | undefined {
   const { pathname } = useRouter();
@@ -11,8 +11,8 @@ export function useTurboSite(): TurboSite | undefined {
     return "repo";
   }
 
-  if (pathname.startsWith("/pack")) {
-    return "pack";
+  if (pathname.startsWith("/engine")) {
+    return "engine";
   }
 
   return undefined;
@@ -45,7 +45,7 @@ function SiteSwitcher() {
           "indeterminate:after:hidden",
           {
             "after:hidden": !site,
-            "after:translate-x-[62px]": site === "pack",
+            "after:translate-x-[62px]": site === "engine",
           }
         )}
       />
@@ -57,7 +57,7 @@ function SiteSwitcher() {
         )}
       >
         <SiteSwitcherLink href="/repo" text="Platform" isActive={site === "repo"} />
-        <SiteSwitcherLink href="/pack" text="Engine" isActive={site === "pack"} />
+        <SiteSwitcherLink href="/engine" text="Engine" isActive={site === "engine"} />
       </span>
     </div>
   );

@@ -7,7 +7,7 @@ function Navigation(props) {
   /*
     Inject a dynamic docs link when NOT on root
     1. Points to /repo/docs when on /repo
-    2. Points to /pack/docs when on /pack
+    2. Points to /engine/docs when on /engine
   */
   const leadingItem = props.items[0];
   if (leadingItem?.id !== "contextual-docs" && site) {
@@ -35,9 +35,9 @@ function Navigation(props) {
     });
   }
 
-  // remove the top level repo and pack links
+  // remove the top level repo and engine links
   // const headerItems = props.items.filter((item) => {
-  //   return item.name !== "repo" && item.name !== "pack";
+  //   return item.name !== "repo" && item.name !== "engine";
   // });
 
   const headerItems = []

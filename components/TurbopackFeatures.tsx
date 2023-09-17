@@ -17,7 +17,7 @@ export const TurbopackFeatures = () => {
           description: `Supports all ESNext features, Browserslist and top-level await.`,
           name: "JavaScript",
         }}
-        href="/pack/docs/features/javascript"
+        href="/engine/docs/features/javascript"
       ></DetailedFeatureLink>
       <DetailedFeatureLink
         feature={{
@@ -30,7 +30,7 @@ export const TurbopackFeatures = () => {
           ),
           name: "TypeScript",
         }}
-        href="/pack/docs/features/typescript"
+        href="/engine/docs/features/typescript"
       ></DetailedFeatureLink>
       <DetailedFeatureLink
         feature={{
@@ -43,7 +43,7 @@ export const TurbopackFeatures = () => {
           ),
           name: "Imports",
         }}
-        href="/pack/docs/features/imports"
+        href="/engine/docs/features/imports"
       ></DetailedFeatureLink>
       <DetailedFeatureLink
         feature={{
@@ -51,7 +51,7 @@ export const TurbopackFeatures = () => {
           description: `Our optimized dev server supports Hot Module Reloading (HMR) and Fast Refresh.`,
           name: "Dev Server",
         }}
-        href="/pack/docs/features/dev-server"
+        href="/engine/docs/features/dev-server"
       ></DetailedFeatureLink>
       <DetailedFeatureLink
         feature={{
@@ -64,7 +64,7 @@ export const TurbopackFeatures = () => {
           ),
           name: "CSS",
         }}
-        href="/pack/docs/features/css"
+        href="/engine/docs/features/css"
       ></DetailedFeatureLink>
       <DetailedFeatureLink
         feature={{
@@ -73,7 +73,7 @@ export const TurbopackFeatures = () => {
             "Learn about Next.js, Svelte, Vue and React Server Components support.",
           name: "Frameworks",
         }}
-        href="/pack/docs/features/frameworks"
+        href="/engine/docs/features/frameworks"
       ></DetailedFeatureLink>
       <DetailedFeatureLink
         feature={{
@@ -86,7 +86,7 @@ export const TurbopackFeatures = () => {
           ),
           name: "Static Assets",
         }}
-        href="/pack/docs/features/static-assets"
+        href="/engine/docs/features/static-assets"
       ></DetailedFeatureLink>
       <DetailedFeatureLink
         feature={{
@@ -99,7 +99,7 @@ export const TurbopackFeatures = () => {
           ),
           name: "Environment Variables",
         }}
-        href="/pack/docs/features/environment-variables"
+        href="/engine/docs/features/environment-variables"
       ></DetailedFeatureLink>
     </div>
   );

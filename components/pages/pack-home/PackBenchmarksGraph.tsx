@@ -236,14 +236,14 @@ const GraphTimer = ({
         <div className="relative flex w-6 h-6">
           {/*<Image*/}
           {/*  alt="Turbopack"*/}
-          {/*  src="/images/docs/pack/turbo-benchmark-icon-light.svg"*/}
+          {/*  src="/images/docs/engine/turbo-benchmark-icon-light.svg"*/}
           {/*  width={32}*/}
           {/*  height={32}*/}
           {/*  className="block dark:hidden"*/}
           {/*/>*/}
           {/*<Image*/}
           {/*  alt="Turbopack"*/}
-          {/*  src="/images/docs/pack/turbo-benchmark-icon-dark.svg"*/}
+          {/*  src="/images/docs/engine/turbo-benchmark-icon-dark.svg"*/}
           {/*  width={32}*/}
           {/*  height={32}*/}
           {/*  className="hidden dark:block"*/}

@@ -3,11 +3,9 @@ title: Prerequisites | Obelisk
 description: Prerequisites
 ---
 
-
 # Prerequisites
 
 Before we begin let’s make sure your local environment is setup with the proper prerequisites.
-
 
 ## Node Environment
 
@@ -21,21 +19,19 @@ If you are using Windows:
 1. install git bash (gitforwindows.org)
 2. install `nodejs`, including “native modules” (nodejs.org/en/download) (re native modules: just keep the checkmark, it’s enabled by default in the installer)
 
-
 ## Sui Binaries
 
 There are two main approaches for obtaining Sui:
 
 1. Installation:
 
-    1. If you are running on a Unix machine (Linux/macOS), then the simplest option is to download the latest binary.
-    
-    2. You can also install via Cargo.
+   1. If you are running on a Unix machine (Linux/macOS), then the simplest option is to download the latest binary.
+
+   2. You can also install via Cargo.
 
 2. Alternatively, build Sui directly from source.
 
 > Download or compile the Sui binaries and configure them in the global environment, our CLI will use `sui` and `sui-test-validator`.
-
 
 ### (Method 1) Install by downloading
 
@@ -57,15 +53,15 @@ There are two main approaches for obtaining Sui:
             ```
 
         2. Extract the binary archive:
-            
+
             ```bash
             tar -C $HOME/.sui/bin/ -vxzf $ARCHIVE_NAME && mv $HOME/.sui/target/release/* $HOME/.sui/bin && rm -rf $HOME/.sui/target
             ```
-            
+
         3. Rename binary:
             ```bash
-                # sui-test-validator-($platform) for example: sui-test-validator-macos-arm64; sui-($platform) for example: sui-macos-arm64
-                mv $HOME/.sui/bin/sui-test-validator-($platform) $HOME/.sui/bin/sui-test-validator && mv $HOME/.sui/bin/sui-($platform) $HOME/.sui/bin/sui
+            # sui-test-validator-($platform) for example: sui-test-validator-macos-arm64; sui-($platform) for example: sui-macos-arm64
+            mv $HOME/.sui/bin/sui-test-validator-($platform) $HOME/.sui/bin/sui-test-validator && mv $HOME/.sui/bin/sui-($platform) $HOME/.sui/bin/sui
             ```
 
         4. Update your path, by adding this line in your .bashrc or .zshrc shell configuration file:
@@ -79,7 +75,6 @@ There are two main approaches for obtaining Sui:
     If you are using Windows:
 
     Please unzip $ARCHIVE_NAME and configure sui and sui-test-validator in it to the global environment.
-
 
 ### (Method 2) Build from source
 
@@ -121,7 +116,6 @@ There are two main approaches for obtaining Sui:
         # Place the compiled binary in the global environment.
         sudo mv target/release/sui target/release/sui-test-validator /usr/local/bin
         ```
-
 
 **Finally, Verify that the binary was installed successfully.**
 

@@ -72,7 +72,7 @@ export default async function openGraphImage(
     const hasTitle = searchParams.has("title");
     const title = hasTitle
       ? searchParams.get("title")?.slice(0, 100)
-      : type === "pack"
+      : type === "engine"
       ? "The successor to Webpack"
       : type === "repo"
       ? "The build system that makes ship happen"
@@ -122,7 +122,7 @@ export function OGImage({
 
       {/* eslint-disable-next-line  @next/next/no-img-element, jsx-a11y/alt-text */}
       <div style={{ display: "flex", height: 97 * 1.1, alignItems: "center" }}>
-        {type === "pack" ? (
+        {type === "engine" ? (
           <PackLogo height={103 * 1.1} width={697 * 1.1} />
         ) : type === "repo" ? (
           <RepoLogo height={83 * 1.1} width={616 * 1.1} />

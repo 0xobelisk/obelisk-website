@@ -82,10 +82,10 @@ export const PRODUCT_MENU_ITEMS = ({
   {
     name: "turbopack",
     "aria-label": "Open Turbopack Home in New Tab",
-    disabled: site === "pack",
+    disabled: site === "engine",
     children: "Turbopack",
     prefix: <TurbopackLogo className="mr-3 h-4 w-4" />,
     type: "internal",
-    href: "/pack",
+    href: "/engine",
   },
 ];

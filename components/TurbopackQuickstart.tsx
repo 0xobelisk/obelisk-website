@@ -13,7 +13,7 @@ export const TurbopackQuickstartArea = () => {
           description: `Learn why we use move and base on sui, and why we think it’s the future of bundling for the web3.`,
           name: "Why Move?",
         }}
-        href="/pack/docs/why-move"
+        href="/engine/docs/why-move"
       ></DetailedFeatureLink>
       <DetailedFeatureLink
         feature={{
@@ -21,7 +21,7 @@ export const TurbopackQuickstartArea = () => {
           description: `Learn about the innovative architecture that powers dapp’s speed improvements.`,
           name: "Core Concepts",
         }}
-        href="/pack/docs/core-concepts"
+        href="/engine/docs/core-concepts"
       ></DetailedFeatureLink>
     </div>
   );
