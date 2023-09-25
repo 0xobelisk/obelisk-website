@@ -5,11 +5,6 @@ The `compgen` CLI tool generates libraries for Components. It makes it much less
 ### Using `compgen` with the Obelisk framework
 
 If you are using the Obelisk framework and have a `obelisk.config.ts` file in your project, you can edit your Components config directly in this file!
-Keep reading from the "Adding Component" section
-
-### Using `compgen` without the Obelisk framework
-
-> We are making this process easier, and will not require a obelisk config in the future in order to use `compgen`
 
 A Components config should be named `obelisk.config.ts`, and placed at the root of your project.
 
@@ -19,8 +14,9 @@ This is the minimal config:
 import { ObeliskConfig } from "@0xobelisk/common/src/codegen/types";
 
 export const obeliskConfig = {
-  projectName: "projectName",
-  components: {}, // an empty config with no components
+  name: "example", // name of the Move project
+  description: "example desc", // description of the Move project
+  components: {}, // an empty config with no components，
   singletonComponents: {}, // an empty config with no singleton components
 } as ObeliskConfig;
 ```
@@ -29,56 +25,100 @@ export const obeliskConfig = {
 
 To generate the components, run `pnpm obelisk compgen ./obelisk.config.ts` in the same folder as the config file.
 
-### Adding component
+### Component Type
 
-Adding a component is done by creating an entry in the `components` object of the config.
+* **components**: Requires developer-defined entity_key. Obelisk will provide some common methods for generating keys.
+* **singletonComponents**: The getter and setter functions will not have a `key` argument.
+
+
+Currently, the component supports four types, and will be added later according to the demand.
+
+#### component with a single column
 
 ```tsx
 export const obeliskConfig = {
-  projectName: "projectName",
+  name: "example",
+  description: "example desc",
   components: {
-      my_component: {
-        name: "string",
-        age: "u8",
-        sex: "bool"
-    }
-  }, // an empty config with no components
+      single_column1: { name: "vector<u8>" },
+      single_column2: "vector<u8>"
+  },
   singletonComponents: {}, // an empty config with no singleton components
 } as ObeliskConfig;
 ```
 
-The key of the entry is the name of the component, and the value is another object: the component configuration.
-
-The component configuration can have these properties:
-
-**TODO**
-
-### Shortcut: componet with a single column
-
-There is a shortcut to create a component with a `vector<u8>` key and a single column in the value schema:
+#### component with a multi column
 
 ```tsx
-components: {
-  // Create a component with key uint256 and a single column with type u64
-  level: "u64";
-}
-```
-
-### Singleton components
-
-In order to create Singleton components that do not have keys (and effectively store a single value), you must pass an init value.
-
-Example:
-
-```tsx
-singletonComponents: {
-  my_singleton_component: {
-    counter: {
-      type: "u64",
-      init: "1000"
-    },
+export const obeliskConfig = {
+  name: "example",
+  description: "example desc",
+  components: {
+      single_column1: { name: "vector<u8>" },
+      single_column2: "vector<u8>",
+      multi_column: {
+        name: "vector<u8>",
+        age: "u8",
+        sex: "bool"
+    }
   },
-}
+  singletonComponents: {}, // an empty config with no singleton components
+} as ObeliskConfig;
 ```
 
-The getter and setter functions will not have a `key` argument.
+#### component with a single value
+
+```tsx
+export const obeliskConfig = {
+  name: "example",
+  description: "example desc",
+  components: {
+      single_column1: { name: "vector<u8>" },
+      single_column2: "vector<u8>",
+      multi_column: {
+        name: "vector<u8>",
+        age: "u8",
+        sex: "bool"
+    }
+  },
+  singletonComponents: {
+      single_value:{
+          type: "u64",
+          init: 10 // initialise the value of my_component4
+      }
+  }
+} as ObeliskConfig;
+```
+
+#### component with a single struct
+
+```tsx
+export const obeliskConfig = {
+  name: "example",
+  description: "example desc",
+  components: {
+      single_column1: { name: "vector<u8>" },
+      single_column2: "vector<u8>",
+      multi_column: {
+        name: "vector<u8>",
+        age: "u8",
+        sex: "bool"
+    },
+  singletonComponents: {
+    single_value: {
+          type: "u64",
+          init: 10
+      },
+    single_struct: {
+          type: {
+              admin: "address",
+              fee: "u64",
+          },
+          init: {
+              admin: "@0x1",
+              fee: "100",
+         }, // initialise the value of config
+      }
+  }
+} as ObeliskConfig;
+```

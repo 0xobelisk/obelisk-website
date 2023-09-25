@@ -11,66 +11,106 @@ description: Reading and writing to Components
 
 The `compgen` tool of the Obelisk CLI can create libraries for each component that wraps the low-level API of Components and types the results.
 
-This section assumes the existence of “MyTable” as described with the configuration below.
+Assume the following configuration exists.
 
 ```tsx
 // definition of MyComponent
 components: {
-    my_component: {
-        name: "string",
+      single_column: { name: "vector<u8>" },
+      multi_column: {
+        name: "vector<u8>",
         age: "u8",
         sex: "bool"
-    }
-}
+    },
+  singletonComponents: {
+    single_value: {
+          type: "u64",
+          init: 10
+      },
+    single_struct: {
+          type: {
+              admin: "address",
+              fee: "u64",
+          },
+          init: {
+              admin: "@0x1",
+              fee: "100",
+         }, // initialise the value of config
+      }
+  }
+```
+
+It's a good idea to make a contains judgement before adding and removing records.
+
+**Existence of a record**
+```rust
+// single_column
+let is_exist = single_column_comp::contains(&world, entity_key);
+
+// multi_column
+let is_exist = multi_column_comp::contains(&world, entity_key);
 ```
 
 **Adding a record**
 
 ```rust
 // Adding a field
-// args: world, key, name, age, sex
-my_component::add(&mut world, keccak256("key"), "name", 10, false);
-```
+// args: world, entity_key, name, age, sex
+// entity_key::from_u256() or entity_key::from_object() or entity_key::from_bytes() or customisation
+single_column_comp::add(&mut world, entity_key, "Alice");
 
-**Updating a record**
-
-```rust
-// Updating a record
-my_component::update(&mut world, keccak256("key"), "name", 11, false);
-```
-
-**Updating a field**
-
-```rust
-// Updating name
-my_component::update_name(&mut world, keccak256("key"), "name");
-// Updating age
-my_component::update_age(&mut world, keccak256("key"), 11);
-// Updating sex
-my_component::update_sex(&mut world, keccak256("key"), false);
-```
-
-**Retrieving a record**
-
-```rust
-// Retrieving a record
-my_component::get(&world, keccak256("key"));
-```
-
-**Retrieving a field**
-
-```rust
-// Retrieve name
-my_component::get_name(&world, keccak256("key"));
-// Retrieve age
-my_component::get_age(&world, keccak256("key"));
-// Retrieve sex
-my_component::get_sex(&world, keccak256("key")); 
+// multi_column
+multi_column_comp::add(&mut world, entity_key, "Bob", 10, false);
 ```
 
 **Deleting a record**
 
 ```rust
-// Deleting a record
-my_component::remove(&mut world, keccak256("key"));
+// single_column
+single_column_comp::remove(&mut world, entity_key);
+
+// multi_column
+multi_column_comp::remove(&mut world, entity_key);
+```
+
+**Updating a record**
+
+```rust
+// single_column
+single_column_comp::update(&mut world, entity_key, "Alice plus");
+
+// multi_column
+multi_column_comp::update(&mut world, entity_key, "Bob plus", 10, false);
+multi_column_comp::update_name(&mut world, entity_key, "Bob plus");
+multi_column_comp::update_age(&mut world, entity_key, 11);
+multi_column_comp::update_sex(&mut world, entity_key, true);
+
+// single_value
+single_value_comp::update(&mut world, 11);
+
+// single_struct
+single_value_comp::update(&mut world, 0x2, 100);
+single_value_comp::update_admin(&mut world, 0x2);
+single_value_comp::update_fee(&mut world, 100);
+```
+
+**Retrieving a record**
+
+```rust
+// single_column
+let name = single_column_comp::get(&world, entity_key);
+
+// multi_column
+let (name, age, sex) = multi_column_comp::get(&world, entity_key, "Bob plus", 10, false);
+let name = multi_column_comp::get_name(&world, entity_key);
+let age = multi_column_comp::get_age(&world, entity_key);
+let sex = multi_column_comp::get_sex(&world, entity_key);
+
+// single_value
+let number = single_value_comp::get(&world);
+
+// single_struct
+let (admin, fee) = single_value_comp::get(&world);
+let admin = single_value_comp::get_admin(&world);
+let fee = single_value_comp::get_fee(&world);
 ```

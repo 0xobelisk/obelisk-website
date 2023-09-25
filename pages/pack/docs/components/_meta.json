@@ -1,5 +1,6 @@
 {
   "installation": "Installation",
-  "reading-and-writing": "Reading and writing to Store",
-  "config": "Components Config"
+  "config": "Components Config",
+  "reading-and-writing": "Reading and writing to Components",
+  "support-type": "Support Type"
 }
