@@ -10,10 +10,11 @@ The Obelisk CLI is used for building and developing a Obelisk project.
 It comes with
 
 
-1. `compgen <configPath>`: autogenerate Obelisk components based on the store components config file
+1. `compgen <configPath>`: Autogenerate Obelisk components based on the store components config file
 2. `publish`: Deploy your own world project on the specified sui network.
-3. `localnode`: start a local Sui node for development
-4. `faucet`: an interface to the Devnet/Localnet faucet. It makes it easy to fund addresses on the Devnet/localnet
+3. `upgrade`: Upgrade your own world project on the specified sui network.
+4. `localnode`: Start a local Sui node for development
+5. `faucet`: An interface to the Devnet/Localnet faucet. It makes it easy to fund addresses on the Devnet/localnet
 
 ## Installation
 
@@ -57,6 +58,17 @@ obelisk publish --network devnet --configPath obelisk.config.ts
 obelisk publish --network testnet --configPath obelisk.config.ts
 # to deploy to sui mainnet
 obelisk publish --network mainnet --configPath obelisk.config.ts
+```
+
+
+### `upgrade`
+
+Upgrade Obelisk contract project.
+
+When you add a new component or modify the system code, you need to upgrade the contract through the `upgrade` method. ([Contract upgrade specification](../migrating-from-others))
+
+```bash
+obelisk publish --configPath obelisk.config.ts
 ```
 
 ### `localnode`
