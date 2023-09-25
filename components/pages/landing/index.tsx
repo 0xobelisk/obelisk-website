@@ -60,7 +60,7 @@ function Card({
 }: {
   href: string;
   icon: React.ElementType;
-  title: "repo" | "pack";
+  title: "repo" | "engine";
   alt?: string;
   className?: string;
   children: React.ReactNode;
@@ -135,10 +135,10 @@ function SiteCards() {
       </FadeIn>
       <FadeIn delay={0.2}>
         <Card
-          title="pack"
+          title="engine"
           alt="Turbopack"
           icon={Turbopack}
-          href="/pack"
+          href="/engine"
           className="turbopackCardBg"
         >
           <div className="absolute top-3 left-3">

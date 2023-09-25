@@ -20,15 +20,15 @@ export function PackHero() {
         <FadeIn className="z-50 flex items-center justify-center w-full">
           <div className="absolute min-w-[614px] min-h-[614px]">
             <Image
-              alt="pack"
-              src="/images/docs/pack/turbopack-hero-hexagons-dark.svg"
+              alt="engine"
+              src="/images/docs/engine/turbopack-hero-hexagons-dark.svg"
               width={614}
               height={614}
               className="hidden dark:block"
             />
             <Image
               alt="Turbopack"
-              src="/images/docs/pack/turbopack-hero-hexagons-light.svg"
+              src="/images/docs/engine/turbopack-hero-hexagons-light.svg"
               width={614}
               height={614}
               className="block dark:hidden"
@@ -47,14 +47,14 @@ export function PackHero() {
           <div className="w-[120px] z-50 mt-[-8.075px] mb-[-8.075px]">
             <Image
               alt=""
-              src={`/images/docs/pack/turbopack-hero-logo-dark.svg`}
+              src={`/images/docs/engine/turbopack-hero-logo-dark.svg`}
               width={120}
               height={136.15}
               className="hidden dark:block"
             />
             <Image
               alt=""
-              src={`/images/docs/pack/turbopack-hero-logo-light.svg`}
+              src={`/images/docs/engine/turbopack-hero-logo-light.svg`}
               width={120}
               height={136.15}
               className="block dark:hidden"
@@ -84,7 +84,7 @@ export function PackHero() {
         >
           <div className="flex flex-col w-full gap-3 md:!flex-row">
             <CTAButton>
-              <Link href="/pack/docs" className="block py-3">
+              <Link href="/engine/docs" className="block py-3">
                 Get Started
               </Link>
             </CTAButton>

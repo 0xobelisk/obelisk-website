@@ -19,7 +19,7 @@ const config: DocsThemeConfig = {
     const { frontMatter } = useConfig();
 
     let section = "Obelisk | Let's build technologies for mass adoption together";
-    if (router?.pathname.startsWith("/pack")) {
+    if (router?.pathname.startsWith("/engine")) {
       section = "docs";
     }
     if (router?.pathname.startsWith("/repo")) {
@@ -81,8 +81,8 @@ const config: DocsThemeConfig = {
     } else {
       const type = asPath.startsWith("/repo")
         ? "repo"
-        : asPath.startsWith("/pack")
-        ? "pack"
+        : asPath.startsWith("/engine")
+        ? "engine"
         : "";
       const title = frontMatter.title
         ? `&title=${encodeURIComponent(frontMatter.title)}`

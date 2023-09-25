@@ -60,7 +60,7 @@ export function PackLetter() {
           <div className="flex flex-col gap-3 pb-2">
             <Image
               alt="Tobias Koppers hand written signature"
-              src="/images/docs/pack/tobias-signature-light.svg"
+              src="/images/docs/engine/tobias-signature-light.svg"
               // 16 px added and offset to account for the glow
               width={173 + 16}
               height={91 + 16}
@@ -68,7 +68,7 @@ export function PackLetter() {
             />
             <Image
               alt="Tobias Koppers hand written signature"
-              src="/images/docs/pack/tobias-signature-dark.svg"
+              src="/images/docs/engine/tobias-signature-dark.svg"
               // 16 px added and offset to account for the glow
               width={173 + 16}
               height={91 + 16}
@@ -84,7 +84,7 @@ export function PackLetter() {
       <FadeIn noVertical className="relative flex justify-center w-full mt-16">
         <div className="max-w-[180px] w-full">
           <CTAButton>
-            <Link href="/pack/docs" className="block py-3 font-sans">
+            <Link href="/engine/docs" className="block py-3 font-sans">
               Start Building
             </Link>
           </CTAButton>

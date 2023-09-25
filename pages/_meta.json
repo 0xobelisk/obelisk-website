@@ -11,7 +11,7 @@
     }
   },
   "repo": "Repo",
-  "pack": "Pack",
+  "engine": "Engine",
   "blog": {
     "title": "Blog",
     "theme": {

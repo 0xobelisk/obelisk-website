@@ -40,7 +40,7 @@ const navigation = {
     // },
     // { name: "FAQ", href: "/repo/docs/faq" },
   ],
-  pack: [
+  engine: [
     // { name: "Documentation", href: "/pack/docs" },
     // { name: "Features", href: "/pack/docs/features" },
   ],
