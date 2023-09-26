@@ -201,9 +201,9 @@ const component_name = Object.keys(obeliskConfig.singletonComponents)[0]
 const component_value = await obelisk.getComponentByName(WORLD_ID, component_name)
 ```
 
-#### Get owned entities
+#### Get owned objects
 
-Query all the entities under the current worldId that are owned by a certain address.
+Query all the objects under the current worldId that are owned by a certain address.
 
 ```typescript
 const metadata = await getMetadata(NETWORK, PACKAGE_ID);
@@ -214,5 +214,5 @@ const obelisk = new Obelisk({
 });
 
 const owner = "0xfa99b5b0463fcfb7d0203c701a76da5eda21a96190eb1368ab36a437cc89195e";
-const owned_entities_value = await obelisk.getOwnedEntities(owner);
+const owned_objects_value = await obelisk.getOwnedObjects(owner);
 ```
