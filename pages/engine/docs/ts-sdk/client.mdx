@@ -171,9 +171,9 @@ Queries the Object information of worldId.
 ```
 
 
-#### Get components
+#### List component names
 
-Get all the component stores in the world store.
+List all component name in the world store.
 
 ```typescript
 const metadata = await getMetadata(NETWORK, PACKAGE_ID);
@@ -182,13 +182,15 @@ const obelisk = new Obelisk({
     packageId: PACKAGE_ID,
     metadata: metadata,
 });
-const components_value = await obelisk.getComponents(WORLD_ID)
+const componentNames = await obelisk.listComponentNames(
+  '0x1541f3a2e7ac48e3e68e60bb97a7cee94e16316cc3f9043a9c0f5e6790ea3af0'
+);
 ```
 
 
-#### Get component
+#### Get entities
 
-Queries the world store for the specified component.
+Get all the entities in the world by component name.
 
 ```typescript
 const metadata = await getMetadata(NETWORK, PACKAGE_ID);
@@ -197,8 +199,46 @@ const obelisk = new Obelisk({
     packageId: PACKAGE_ID,
     metadata: metadata,
 });
-const component_name = Object.keys(obeliskConfig.singletonComponents)[0]
-const component_value = await obelisk.getComponentByName(WORLD_ID, component_name)
+
+const worldId = "0x1541f3a2e7ac48e3e68e60bb97a7cee94e16316cc3f9043a9c0f5e6790ea3af0";
+const componentName = Object.keys(obeliskConfig.components)[0]
+
+const entities = await obelisk.getEntities(
+    worldId,
+    componentName
+);
+```
+
+#### Get entity
+
+Get the entity's data based on component name and entity id(option).
+
+```typescript
+const metadata = await getMetadata(NETWORK, PACKAGE_ID);
+const obelisk = new Obelisk({
+    networkType: NETWORK,
+    packageId: PACKAGE_ID,
+    metadata: metadata,
+});
+
+const worldId = "0x1541f3a2e7ac48e3e68e60bb97a7cee94e16316cc3f9043a9c0f5e6790ea3af0";
+
+// get component entity data
+const componentName = Object.keys(obeliskConfig.components)[0]
+const entityId = "0x00000000000000000000000000000000000000000000000000000000000003ed"
+const entities = await obelisk.getEntity(
+    worldId,
+    componentName,
+    entityId
+);
+
+// get singleton component entity data
+const singletonComponentName = Object.keys(obeliskConfig.singletonComponents)[0]
+const entities = await obelisk.getEntity(
+    worldId,
+    componentName
+);
+
 ```
 
 #### Get owned objects
@@ -216,3 +256,29 @@ const obelisk = new Obelisk({
 const owner = "0xfa99b5b0463fcfb7d0203c701a76da5eda21a96190eb1368ab36a437cc89195e";
 const owned_objects_value = await obelisk.getOwnedObjects(owner);
 ```
+
+### About entity key
+
+You can customize how the key is generated in the system, but I recommend that you generate the entity key using the user's address or objectId as the associative data, as this will help you associate the generated entity with address/objectId. This will help you associate the generated entity with the user's address, and then you can quickly determine the creator of the entity by the user's address or objectId.
+
+We provide three ways to convert entity keys, and of course you are welcome to contribute more entity key specifications.
+
+
+```typescript
+// Create key based on objectId.
+// You can use the user's address as the entity key, 
+// or you can use the Id of an object as the entity key.
+//
+// For example: using the objectId of the NFT as the key, 
+// you can set the owner of the nft as the owner of the accessed entity.
+let objectAddress = await obelisk.entity_key_from_object(
+    '0x1541f3a2e7ac48e3e68e60bb97a7cee94e16316cc3f9043a9c0f5e6790ea3af0'
+);
+
+// hexAddress(keccak256(inputStringData))
+let bytesAddress = await obelisk.entity_key_from_bytes('hello');
+
+// hexAddress(inputNumberData)
+let numberAddress = await obelisk.entity_key_from_u256(123);
+```
+
