@@ -17,7 +17,7 @@ When the world contract is deployed successfully, it will return a PackageId (th
 
 ### Data preparation
 
-We create a Project called Counter and declare sigletonComponents called counter, which is of type `u64` and has an initial value of `0`.
+We create a Project called Counter and declare sigletonSchemas called counter, which is of type `u64` and has an initial value of `0`.
 
 
 ```typescript
@@ -31,7 +31,7 @@ export const obeliskConfig = {
     ],
     components: {
     },
-    singletonComponents: {
+    singletonSchemas: {
         counter: {
             type: "u64",
             init: "0"
@@ -233,7 +233,7 @@ const entities = await obelisk.getEntity(
 );
 
 // get singleton component entity data
-const singletonComponentName = Object.keys(obeliskConfig.singletonComponents)[0]
+const singletonComponentName = Object.keys(obeliskConfig.singletonSchemas)[0]
 const entities = await obelisk.getEntity(
     worldId,
     componentName

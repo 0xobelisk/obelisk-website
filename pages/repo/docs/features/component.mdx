@@ -1,6 +1,6 @@
-# Component
+# Schema
 
-In the world of Obelisk Engine, components are structural data types customized by the developer You can add and hang components of any structural type to entities, and the internal implementation is handled by the underlying paradigm methods.
+In the world of Obelisk Engine, schemas are structural data types customized by the developer You can add and hang schemas of any structural type to entities, and the internal implementation is handled by the underlying paradigm methods.
 
   Give an example.
 
@@ -36,12 +36,12 @@ You build a world of counters and create custom counter structures with correspo
 module counter::main {
 
      /// add your custom struct to your entity
-    public entry fun set_counter_component_to_entity(world:&mut World,entity_id:u64,ctx: &mut TxContext){
+    public entry fun set_counter_schema_to_entity(world:&mut World,entity_id:u64,ctx: &mut TxContext){
         let counter = create_counter(ctx);
-        add_component(world,entity_id,counter);
+        add_schema(world,entity_id,counter);
     }
 }
 
 ```
 
-Finally you can hook your custom structure to the entity you created via the add_component method
+Finally you can hook your custom structure to the entity you created via the add_schema method
