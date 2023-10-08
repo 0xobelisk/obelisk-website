@@ -17,50 +17,46 @@ When the world contract is deployed successfully, it will return a PackageId (th
 
 ### Data preparation
 
-We create a Project called Counter and declare sigletonComponents called counter, which is of type `u64` and has an initial value of `0`.
+We create a Project called Counter and declare sigleton schema called counter, which is of type `u64` and has an initial value of `0`.
 
 
 ```typescript
-import { ObeliskConfig } from "@0xobelisk/common/src/codegen/types";
+import { ObeliskConfig } from "@0xobelisk/common";
 
 export const obeliskConfig = {
-    name: "example",
-    description: "example desc",
+    name: "counter",
+    description: "counter",
     systems: [
         "counter_system",
     ],
-    components: {
-    },
-    singletonComponents: {
-        counter: {
-            type: "u64",
-            init: "0"
+    schemas: {
+        sample_schema: "u64",
+        counter: { // sigleton schema
+            singleton: true,
+            valueSchema: "u64",
+            init: 0
         },
     }
-}as ObeliskConfig;
+} as ObeliskConfig;
 ```
 
 Through the CLI, we will generate the corresponding contract based on obelisk.config.ts At this point we need to write the system logic.
 
 ```bash
-obelisk compgen obelisk.config.ts
+obelisk schemagen obelisk.config.ts
 ```
 
 The next step is simply to write the system file method.
 
 ```rust
-// contracts/Counter/system/counter_system.move
-module Counter::counter_system {
-    use Counter::world::World;
-    use Counter::counter_component;
+// contracts/counter/system/counter_system.move
+module counter::counter_system {
+    use counter::world::World;
+    use counter::counter_schema;
 
     public entry fun inc(world: &mut World){
-        let value = counter_component::get(world) + 1;
-        counter_component::update(world,value);
-    }
-
-    public fun get(world: &mut World): u64 {
-        return counter_component::get(world);
+        let value = counter_schema::get(world) + 1;
+        counter_schema::set(world,value);
     }
 }
 ```
@@ -171,9 +167,9 @@ Queries the Object information of worldId.
 ```
 
 
-#### List component names
+#### List schema names
 
-List all component name in the world store.
+List all schema name in the world store.
 
 ```typescript
 const metadata = await getMetadata(NETWORK, PACKAGE_ID);
@@ -182,36 +178,15 @@ const obelisk = new Obelisk({
     packageId: PACKAGE_ID,
     metadata: metadata,
 });
-const componentNames = await obelisk.listComponentNames(
+const schemaNames = await obelisk.listSchemaNames(
   '0x1541f3a2e7ac48e3e68e60bb97a7cee94e16316cc3f9043a9c0f5e6790ea3af0'
 );
 ```
 
 
-#### Get entities
-
-Get all the entities in the world by component name.
-
-```typescript
-const metadata = await getMetadata(NETWORK, PACKAGE_ID);
-const obelisk = new Obelisk({
-    networkType: NETWORK,
-    packageId: PACKAGE_ID,
-    metadata: metadata,
-});
-
-const worldId = "0x1541f3a2e7ac48e3e68e60bb97a7cee94e16316cc3f9043a9c0f5e6790ea3af0";
-const componentName = Object.keys(obeliskConfig.components)[0]
-
-const entities = await obelisk.getEntities(
-    worldId,
-    componentName
-);
-```
-
 #### Get entity
 
-Get the entity's data based on component name and entity id(option).
+Get the entity's data based on schema name and entity id(option).
 
 ```typescript
 const metadata = await getMetadata(NETWORK, PACKAGE_ID);
@@ -223,20 +198,53 @@ const obelisk = new Obelisk({
 
 const worldId = "0x1541f3a2e7ac48e3e68e60bb97a7cee94e16316cc3f9043a9c0f5e6790ea3af0";
 
-// get component entity data
-const componentName = Object.keys(obeliskConfig.components)[0]
+// get schema entity data
+const schemaName = "simple_schema"
 const entityId = "0x00000000000000000000000000000000000000000000000000000000000003ed"
 const entities = await obelisk.getEntity(
     worldId,
-    componentName,
+    schemaName,
     entityId
 );
 
-// get singleton component entity data
-const singletonComponentName = Object.keys(obeliskConfig.singletonComponents)[0]
+// get singleton schema entity data
+const singletonSchemaName = "counter"
 const entities = await obelisk.getEntity(
     worldId,
-    componentName
+    singletonSchemaName
+);
+
+```
+
+
+#### Contain entity
+
+Determine if the entity exists
+
+```typescript
+const metadata = await getMetadata(NETWORK, PACKAGE_ID);
+const obelisk = new Obelisk({
+    networkType: NETWORK,
+    packageId: PACKAGE_ID,
+    metadata: metadata,
+});
+
+const worldId = "0x1541f3a2e7ac48e3e68e60bb97a7cee94e16316cc3f9043a9c0f5e6790ea3af0";
+
+// get schema entity data
+const schemaName = "simple_schema"
+const entityId = "0x00000000000000000000000000000000000000000000000000000000000003ed"
+const entities = await obelisk.containEntity(
+    worldId,
+    schemaName,
+    entityId
+);
+
+// get singleton schema entity data
+const singletonSchemaName = "counter"
+const entities = await obelisk.containEntity(
+    worldId,
+    singletonSchemaName
 );
 
 ```
