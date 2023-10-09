@@ -34,7 +34,7 @@ return (person.name, person.age);
 // person_schema: Automatically generated schemas based on Obelisk config
 // world: A Licence-Free World Generated with Obelisk
 // storing
-person_schema::add(&mut world, address, "name", 10);
+person_schema::set(&mut world, address, "name", 10);
 // getting
 return person_schema::get(&world, address);
 ```
