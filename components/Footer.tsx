@@ -59,7 +59,7 @@ const navigation = {
     },
     {
       name: "Telegram",
-      href: "https://t.me/+0_98p03Fbv1hNzY1",
+      href: "https://t.me/obeliskengine",
     },
   ],
   company: (site: TurboSite) => [
