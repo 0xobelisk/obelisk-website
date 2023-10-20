@@ -51,7 +51,7 @@ const navigation = {
     },
     {
       name: "Discord",
-      href: "https://discord.gg/b3q9CM7H",
+      href: "https://discord.gg/zbPrQTy7Rf",
     },
     {
       name: "Twitter",
