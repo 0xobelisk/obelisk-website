@@ -51,13 +51,13 @@ To set up the target network for deploying the contract (mainnet/testnet/devnet/
 
 ```bash
 # to deploy sui locally
-obelisk publish --network localnet --configPath obelisk.config.ts
+obelisk publish --network localnet
 # to deploy to sui devnet
-obelisk publish --network devnet --configPath obelisk.config.ts
+obelisk publish --network devnet
 # to deploy to sui testnet
-obelisk publish --network testnet --configPath obelisk.config.ts
+obelisk publish --network testnet
 # to deploy to sui mainnet
-obelisk publish --network mainnet --configPath obelisk.config.ts
+obelisk publish --network mainnet
 ```
 
 
@@ -68,7 +68,7 @@ Upgrade Obelisk contract project.
 When you add a new schema or modify the system code, you need to upgrade the contract through the `upgrade` method. ([Contract upgrade specification](../migrating-from-others))
 
 ```bash
-obelisk publish --configPath obelisk.config.ts
+obelisk upgrade --network <network:mainnet/testnet/devnet/localnet>
 ```
 
 ### `localnode`
