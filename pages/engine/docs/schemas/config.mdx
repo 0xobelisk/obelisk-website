@@ -40,11 +40,11 @@ export const obeliskConfig = {
   description: "example desc",
   schemas: {
       single_column1: {
-          valueSchema: "vector<u8>"
+          valueType: "vector<u8>"
       },
       single_column2: "vector<u8>",
       single_column3: {
-          valueSchema: {
+          valueType: {
               name: "vector<u8>"
           }
       }
@@ -60,7 +60,7 @@ export const obeliskConfig = {
   description: "example desc",
   schemas: {
       multi_column: {
-          valueSchema: {
+          valueType: {
             name: "vector<u8>",
             age: "u8",
             sex: "bool"
@@ -78,9 +78,8 @@ export const obeliskConfig = {
   description: "example desc",
   schemas: {
       single_value: {
-        singleton: true,
-        valueSchema: "u64",
-        init: 10
+        valueType: "u64",
+        defaultValue: 10
     }
   }
 } as ObeliskConfig;
@@ -94,13 +93,12 @@ export const obeliskConfig = {
   description: "example desc",
   schemas: {
       single_struct: {
-        singleton: true,
-        valueSchema: {
+        valueType: {
              admin: "address",
              fee: "u64",
         },
-        init: {
-            admin: "@0x1",
+        defaultValue: {
+            admin: "0x1",
             fee: "100",
         }
     }
@@ -117,7 +115,7 @@ export const obeliskConfig = {
   schemas: {
       ephemeral_schema: {
         ephemeral: true,
-        valueSchema: {
+        valueType: {
              result: "u8",
         },
     }

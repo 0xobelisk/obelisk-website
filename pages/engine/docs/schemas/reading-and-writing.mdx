@@ -26,31 +26,53 @@ export const obeliskConfig = {
   schemas: {
     single_column: "u64",
     multi_column: {
-      valueSchema: {
+      valueType: {
         state: "vector<u8>",
         last_set_time: "u64",
       }
     },
     ephemeral: {
       ephemeral: true,
-      valueSchema: "u64",
+      valueType: "u64",
     },
     single_value: {
-      singleton: true,
-      valueSchema: "u64",
-      init: 1000
+      valueType: "u64",
+      defaultValue: 1000
     },
     single_struct: {
-      singleton: true,
-      valueSchema: {
+      valueType: {
         admin: "address",
         fee: "u64",
       },
-      init: {
-        admin: "@0x1",
+      defaultValue: {
+        admin: "0x1",
         fee: 100,
       }
     },
+    single_struct_temp: {
+      valueType: {
+        addr_list: "vector<address>",
+        bool_list: "vector<bool>",
+        name: "string",
+        name_list: "vector<string>",
+        map: "vector<vector<u8>>",
+      },
+      defaultValue: {
+        addr_list: [
+          "0x1804b821bba181110599b8757008eabe6f89f62774d7fafb5ee666ac742a41f8",
+          "0x341ede3aa40e29d6716ce92b2fdb977be5ac1129aa43eb024a8b5a9478204fe2",
+          "0x34ea3ab186a2b8f217a71301ae447e01e9aa3e22bd4bc827f45a3a2f5381d9c4",
+          "0x4f42679d98cd10fbc3daf9996a40e1bb9213315680489b978fe1681b7f00091d",
+        ],
+        bool_list: [true, false, true],
+        name: "tom",
+        name_list: ["bob", "alice", "tom"],
+        map: [
+          [1, 2, 3, 4, 5],
+          [1, 35, 5, 6, 7, 9],
+        ],
+      }
+    } 
   }
 } as ObeliskConfig;
 ```
@@ -86,9 +108,9 @@ multi_column_schema::set_sex(&mut world, entity_key, true);
 single_value_schema::set(&mut world, 11);
 
 // single_struct
-single_value_schema::set(&mut world, 0x2, 100);
-single_value_schema::set_admin(&mut world, 0x2);
-single_value_schema::set_fee(&mut world, 100);
+single_struct_schema::set(&mut world, 0x2, 100);
+single_struct_schema::set_admin(&mut world, 0x2);
+single_struct_schema::set_fee(&mut world, 100);
 
 // ephemeral schema
 ephemeral::emit_ephemeral(10);
@@ -122,7 +144,7 @@ let sex = multi_column_schema::get_sex(&world, entity_key);
 let number = single_value_schema::get(&world);
 
 // single_struct
-let (admin, fee) = single_value_schema::get(&world);
-let admin = single_value_schema::get_admin(&world);
-let fee = single_value_schema::get_fee(&world);
+let (admin, fee) = single_struct_schema::get(&world);
+let admin = single_struct_schema::get_admin(&world);
+let fee = single_struct_schema::get_fee(&world);
 ```
