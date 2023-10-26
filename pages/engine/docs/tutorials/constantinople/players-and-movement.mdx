@@ -4,8 +4,8 @@ import { CollapseCode } from "../../../../../components/CollapseCode";
 
 **In this section, we will accomplish the following:**
 
-1. Spawn in each unique wallet address as an entity with the `Player`, `Movable`, and `Position` components.
-2. Operate on a player's `Position` component with a system to create movement.
+1. Spawn in each unique wallet address as an entity with the `player`, `movable`, and `position` components.
+2. Operate on a player's `position` component with a system to create movement.
 3. Optimistically render player movement in the client.
 
 ## 1.1. Create the components as schemas
@@ -58,7 +58,7 @@ In Obelisk, a system can have an arbitrary number of methods inside of it. Since
 
 Before we add in the functionality of users moving we need to make sure each user is being properly identified as a player with the position and movable table. The former gives us a means of operating on it to create movement, and the latter allows us to grant the entity permission to use the move system.
 
-To solve for these problems we can add the **move_t method**, which will assign the `Player`, `Position`, and `Movable` schemas we created earlier, inside of `map_system.move`.
+To solve for these problems we can add the **register method**, which will assign the `player`, `position`, and `movable` schemas we created earlier, inside of `map_system.move`.
 
 <CollapseCode>
 
@@ -97,7 +97,7 @@ As you may be able to tell already, writing systems and their methods in Obelisk
 
 ### Move method
 
-Next we’ll add the **move method** to `map_system.move`. This will allow us to move users (e.g. the user's wallet address as their entityID) by updating their `Position` table.
+Next we’ll add the **move method** to `map_system.move`. This will allow us to move users (e.g. the user's wallet address as their entityID) by updating their `position` table.
 
 <CollapseCode>
 
@@ -161,7 +161,7 @@ export type SystemCalls = ReturnType<typeof createSystemCalls>;
 
 export function createSystemCalls(
   { playerEntity, worldSend, txReduced$ }: SetupNetworkResult,
-  { Player, Position }: ClientComponents
+  { player, position }: ClientComponents
 ) {
   const moveTo = async (x: number, y: number) => {
     if (!playerEntity) {
@@ -177,7 +177,7 @@ export function createSystemCalls(
       throw new Error("no player");
     }
 
-    const playerPosition = getComponentValue(Position, playerEntity);
+    const playerPosition = getComponentValue(position, playerEntity);
     if (!playerPosition) {
       console.warn("cannot moveBy without a player position, not yet spawned?");
       return;
@@ -191,7 +191,7 @@ export function createSystemCalls(
       throw new Error("no player");
     }
 
-    const canSpawn = getComponentValue(Player, playerEntity)?.value !== true;
+    const canSpawn = getComponentValue(player, playerEntity)?.value !== true;
     if (!canSpawn) {
       throw new Error("already spawned");
     }
@@ -238,14 +238,14 @@ export const GameBoard = () => {
   useKeyboardMovement();
 
   const {
-    components: { Player, Position },
+    components: { player, position },
     network: { playerEntity },
     systemCalls: { spawn },
   } = useMUD();
 
-  const canSpawn = useComponentValue(Player, playerEntity)?.value !== true;
+  const canSpawn = useComponentValue(player, playerEntity)?.value !== true;
 
-  const playerPosition = useComponentValue(Position, playerEntity);
+  const playerPosition = useComponentValue(position, playerEntity);
   const player =
     playerEntity && playerPosition
       ? {
@@ -270,7 +270,7 @@ A commonly used pattern in game development is the addition of _optimistic rende
 
 This pattern has a trade-off, especially on the blockchain: it can potentially create a worse user experience when transactions fail, but it creates a _much_ smoother experience when the optimistic assumption proves to be true.
 
-Obelisk provides an easy way to add optimistic rendering. First we need to override our `Position` component on the client to add optimistic updates. Let’s go ahead and do this in `createClientComponents.ts`.
+Obelisk provides an easy way to add optimistic rendering. First we need to override our `position` component on the client to add optimistic updates. Let’s go ahead and do this in `createClientComponents.ts`.
 
 <CollapseCode>
 
@@ -283,8 +283,8 @@ export type ClientComponents = ReturnType<typeof createClientComponents>;
 export function createClientComponents({ components }: SetupNetworkResult) {
   return {
     ...components,
-    Player: overridableComponent(components.Player),
-    Position: overridableComponent(components.Position),
+    player: overridableComponent(components.player),
+    position: overridableComponent(components.position),
   };
 }
 ```
@@ -308,7 +308,7 @@ export type SystemCalls = ReturnType<typeof createSystemCalls>;
 
 export function createSystemCalls(
   { playerEntity, worldSend, txReduced$ }: SetupNetworkResult,
-  { Player, Position }: ClientComponents
+  { player, position }: ClientComponents
 ) {
   const moveTo = async (x: number, y: number) => {
     if (!playerEntity) {
@@ -316,7 +316,7 @@ export function createSystemCalls(
     }
 
     const positionId = uuid();
-    Position.addOverride(positionId, {
+    position.addOverride(positionId, {
       entity: playerEntity,
       value: { x, y },
     });
@@ -325,7 +325,7 @@ export function createSystemCalls(
       const tx = await worldSend("move", [x, y]);
       await awaitStreamValue(txReduced$, (txHash) => txHash === tx.hash);
     } finally {
-      Position.removeOverride(positionId);
+      position.removeOverride(positionId);
     }
   };
 
@@ -334,7 +334,7 @@ export function createSystemCalls(
       throw new Error("no player");
     }
 
-    const playerPosition = getComponentValue(Position, playerEntity);
+    const playerPosition = getComponentValue(position, playerEntity);
     if (!playerPosition) {
       console.warn("cannot moveBy without a player position, not yet spawned?");
       return;
@@ -348,18 +348,18 @@ export function createSystemCalls(
       throw new Error("no player");
     }
 
-    const canSpawn = getComponentValue(Player, playerEntity)?.value !== true;
+    const canSpawn = getComponentValue(player, playerEntity)?.value !== true;
     if (!canSpawn) {
       throw new Error("already spawned");
     }
 
     const positionId = uuid();
-    Position.addOverride(positionId, {
+    position.addOverride(positionId, {
       entity: playerEntity,
       value: { x, y },
     });
     const playerId = uuid();
-    Player.addOverride(playerId, {
+    player.addOverride(playerId, {
       entity: playerEntity,
       value: { value: true },
     });
@@ -368,8 +368,8 @@ export function createSystemCalls(
       const tx = await worldSend("spawn", [x, y]);
       await awaitStreamValue(txReduced$, (txHash) => txHash === tx.hash);
     } finally {
-      Position.removeOverride(positionId);
-      Player.removeOverride(playerId);
+      position.removeOverride(positionId);
+      player.removeOverride(playerId);
     }
   };
 

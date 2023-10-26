@@ -27,7 +27,7 @@ You'll notice that in the scope above there are a few key interactions that we n
 
 In the ECS model both the player and the boulder can be thought of as entities, both of which have components that give it certain properties. For example, the player may have a `movable` component and the boulder an `obstruction` component.
 
-In a vacuum these components don't _do_ anything, they are just data (in this example, booleans). However, when we bring a system into context—the `MoveSystem`—this allows us to operate on an entity’s `position` component to move them. It would also have the logic to know that `position` cannot be moved onto a spot on the grid in which an entity with `obstruction` is present.
+In a vacuum these components don't _do_ anything, they are just data (in this example, booleans). However, when we bring a system into context—the `move_system`—this allows us to operate on an entity’s `position` component to move them. It would also have the logic to know that `position` cannot be moved onto a spot on the grid in which an entity with `obstruction` is present.
 
 ### ECS in Obelisk
 
@@ -35,7 +35,7 @@ There is one last concept to understand before we begin—how to actually implem
 
 In Obelisk there are `schemas` instead of components (Obelisk is a protocol for more than just onchain games, after all). However, for the sake of this tutorial, these can be mostly thought of interchangeably. In order to apply the ECS model for the example above one would create a `movable` table and an `obstruction` table then set both of their types to `boolean`.
 
-You would then create a system, `MoveSystem.move`, and wire up the logic required to interact with the schemas (i.e. components) accordingly.
+You would then create a system, `move_system.move`, and wire up the logic required to interact with the schemas (i.e. components) accordingly.
 
 That is all that is required! After this is done, simply call the systems from the client and vóila—you have movement.
 
