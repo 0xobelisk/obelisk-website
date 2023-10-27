@@ -106,7 +106,12 @@ export function RepoHero() {
             </CTAButton>
           </div>
           <CTAButton>
-            <Link href="/repo/docs" className="block py-3">
+            <Link
+                href="/"
+                // href="/repo/docs"
+                className="block py-3"
+
+            >
               Get Started
             </Link>
           </CTAButton>

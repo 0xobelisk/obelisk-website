@@ -125,9 +125,13 @@ function SiteCards() {
           title="repo"
           alt="Turborepo"
           icon={Turborepo}
-          href="/repo"
+          href="/"
+          // href="/repo"
           className="turborepoCardBg"
         >
+            <div className="absolute top-3 left-3">
+                <CardBadge>Coming soon</CardBadge>
+            </div>
           <p className="text-lg !w-[280px] md:!w-[340px] font-space-grotesk text-center opacity-50 dark:opacity-70">
             Co-built platform for connecting users and developers.
           </p>
