@@ -29,7 +29,7 @@ function FooterHeader({ children }: { children: ReactNode }) {
 
 const navigation = {
   general: [
-    // { name: "Blog", href: "/blog" },
+    { name: "Blog", href: "/blog" },
     // { name: "Releases", href: "https://github.com/0xobelisk/obelisk-website/releases" },
   ],
   repo: [
@@ -93,16 +93,16 @@ export function FooterContent() {
         <div className="xl:grid xl:grid-cols-3 xl:gap-8">
           <div className="grid grid-cols-1 gap-8 xl:col-span-2">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 md:gap-8">
-              {/*<div className="mt-12 md:!mt-0">*/}
-              {/*  <FooterHeader>Resources</FooterHeader>*/}
-              {/*  <ul role="list" className="mt-4 space-y-1.5 list-none ml-0">*/}
-              {/*    {navigation.general.map((item) => (*/}
-              {/*      <li key={item.name}>*/}
-              {/*        <FooterLink href={item.href}>{item.name}</FooterLink>*/}
-              {/*      </li>*/}
-              {/*    ))}*/}
-              {/*  </ul>*/}
-              {/*</div>*/}
+              <div className="mt-12 md:!mt-0">
+                <FooterHeader>Resources</FooterHeader>
+                <ul role="list" className="mt-4 space-y-1.5 list-none ml-0">
+                  {navigation.general.map((item) => (
+                    <li key={item.name}>
+                      <FooterLink href={item.href}>{item.name}</FooterLink>
+                    </li>
+                  ))}
+                </ul>
+              </div>
               {/*<div className="mt-12 md:!mt-0">*/}
               {/*  <FooterHeader>Platform</FooterHeader>*/}
               {/*  <ul role="list" className="mt-4 space-y-1.5 list-none ml-0">*/}

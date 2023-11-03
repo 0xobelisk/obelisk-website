@@ -37,10 +37,14 @@ function Navigation(props) {
 
   // remove the top level repo and engine links
   // const headerItems = props.items.filter((item) => {
-  //   return item.name !== "repo" && item.name !== "engine";
+  //   return item.name !== "repo" && item.name !== "engine" ;
   // });
 
-  const headerItems = []
+  const headerItems = props.items.filter((item) => {
+    return item.name == "blog";
+  });
+  console.log("navigation",props.items)
+  // const headerItems = []
 
   // items last to override the default
   return <Navbar {...props} items={headerItems}  />;
