@@ -350,138 +350,6 @@ module constantinople::map_system {
 
 </CollapseCode>
 
-Let's also make sure these interactions are rendering optimistically like everything else. Let's update `createSystemCalls.ts` accordingly.
-
-<CollapseCode>
-
-```ts filename="createSystemCalls.ts" {11,30-34} copy showLineNumbers
-import { Has, HasValue, getComponentValue, runQuery } from "@latticexyz/recs";
-import { uuid, awaitStreamValue } from "@latticexyz/utils";
-import { MonsterCatchResult } from "../monsterCatchResult";
-import { ClientComponents } from "./createClientComponents";
-import { SetupNetworkResult } from "./setupNetwork";
-
-export type SystemCalls = ReturnType<typeof createSystemCalls>;
-
-export function createSystemCalls(
-  { playerEntity, singletonEntity, worldSend, txReduced$ }: SetupNetworkResult,
-  { encounter, MapConfig, Obstruction, Player, Position }: ClientComponents
-) {
-  const wrapPosition = (x: number, y: number) => {
-    const mapConfig = getComponentValue(MapConfig, singletonEntity);
-    if (!mapConfig) {
-      throw new Error("mapConfig no yet loaded or initialized");
-    }
-    return [(x + mapConfig.width) % mapConfig.width, (y + mapConfig.height) % mapConfig.height];
-  };
-
-  const isObstructed = (x: number, y: number) => {
-    return runQuery([Has(Obstruction), HasValue(Position, { x, y })]).size > 0;
-  };
-
-  const moveTo = async (inputX: number, inputY: number) => {
-    if (!playerEntity) {
-      throw new Error("no player");
-    }
-
-    const inEncounter = !!getComponentValue(encounter, playerEntity);
-    if (inEncounter) {
-      console.warn("cannot move while in encounter");
-      return;
-    }
-
-    const [x, y] = wrapPosition(inputX, inputY);
-    if (isObstructed(x, y)) {
-      console.warn("cannot move to obstructed space");
-      return;
-    }
-
-    const positionId = uuid();
-    Position.addOverride(positionId, {
-      entity: playerEntity,
-      value: { x, y },
-    });
-
-    try {
-      const tx = await worldSend("move", [x, y]);
-      await awaitStreamValue(txReduced$, (txHash) => txHash === tx.hash);
-    } finally {
-      Position.removeOverride(positionId);
-    }
-  };
-
-  const moveBy = async (deltaX: number, deltaY: number) => {
-    if (!playerEntity) {
-      throw new Error("no player");
-    }
-
-    const playerPosition = getComponentValue(Position, playerEntity);
-    if (!playerPosition) {
-      console.warn("cannot moveBy without a player position, not yet spawned?");
-      return;
-    }
-
-    await moveTo(playerPosition.x + deltaX, playerPosition.y + deltaY);
-  };
-
-  const spawn = async (inputX: number, inputY: number) => {
-    if (!playerEntity) {
-      throw new Error("no player");
-    }
-
-    const canSpawn = getComponentValue(Player, playerEntity)?.value !== true;
-    if (!canSpawn) {
-      throw new Error("already spawned");
-    }
-
-    const [x, y] = wrapPosition(inputX, inputY);
-    if (isObstructed(x, y)) {
-      console.warn("cannot spawn on obstructed space");
-      return;
-    }
-
-    const positionId = uuid();
-    Position.addOverride(positionId, {
-      entity: playerEntity,
-      value: { x, y },
-    });
-    const playerId = uuid();
-    Player.addOverride(playerId, {
-      entity: playerEntity,
-      value: { value: true },
-    });
-
-    try {
-      const tx = await worldSend("spawn", [x, y]);
-      await awaitStreamValue(txReduced$, (txHash) => txHash === tx.hash);
-    } finally {
-      Position.removeOverride(positionId);
-      Player.removeOverride(playerId);
-    }
-  };
-
-  const throwBall = async () => {
-    // TODO
-    return null as any;
-  };
-
-  const fleeEncounter = async () => {
-    // TODO
-    return null as any;
-  };
-
-  return {
-    moveTo,
-    moveBy,
-    spawn,
-    throwBall,
-    fleeEncounter,
-  };
-}
-```
-
-</CollapseCode>
-
 ## 3.2. Start encounter and spawn a monster
 
 We're almost ready start an encounter.
@@ -556,73 +424,16 @@ Then let’s query to see if the player is in an encounter and, if so, get the m
 
 <CollapseCode>
 
-```tsx filename="GameBoard.tsx" {7-9,15,48-50,59-63} copy showLineNumbers
-import { useComponentValue } from "@latticexyz/react";
-import { GameMap } from "./GameMap";
-import { useMUD } from "./MUDContext";
-import { useKeyboardMovement } from "./useKeyboardMovement";
-import { hexToArray } from "@latticexyz/utils";
-import { TerrainType, terrainTypes } from "./terrainTypes";
-import { EncounterScreen } from "./EncounterScreen";
-import { Entity } from "@latticexyz/recs";
-import { MonsterType, monsterTypes } from "./monsterTypes";
+```tsx filename="Map.tsx"
+const obelisk = new Obelisk({
+    networkType: NETWORK,
+    packageId: PACKAGE_ID,
+    metadata: contractMetadata,
+});
 
-export const GameBoard = () => {
-  useKeyboardMovement();
+let player_data = await obelisk.getEntity(WORLD_ID, 'position', obelisk.getAddress());
 
-  const {
-    components: { encounter, MapConfig, Monster, Player, Position },
-    network: { playerEntity, singletonEntity },
-    systemCalls: { spawn },
-  } = useMUD();
-
-  const canSpawn = useComponentValue(Player, playerEntity)?.value !== true;
-
-  const playerPosition = useComponentValue(Position, playerEntity);
-  const player =
-    playerEntity && playerPosition
-      ? {
-          x: playerPosition.x,
-          y: playerPosition.y,
-          emoji: "🤠",
-          entity: playerEntity,
-        }
-      : null;
-
-  const mapConfig = useComponentValue(MapConfig, singletonEntity);
-  if (mapConfig == null) {
-    throw new Error("map config not set or not ready, only use this hook after loading state === LIVE");
-  }
-
-  const { width, height, terrain: terrainData } = mapConfig;
-  const terrain = Array.from(hexToArray(terrainData)).map((value, index) => {
-    const { emoji } = value in TerrainType ? terrainTypes[value as TerrainType] : { emoji: "" };
-    return {
-      x: index % width,
-      y: Math.floor(index / width),
-      emoji,
-    };
-  });
-
-  const encounter = useComponentValue(encounter, playerEntity);
-  const monsterType = useComponentValue(Monster, encounter ? (encounter.monster as Entity) : undefined)?.value;
-  const monster = monsterType != null && monsterType in MonsterType ? monsterTypes[monsterType as MonsterType] : null;
-
-  return (
-    <GameMap
-      width={width}
-      height={height}
-      terrain={terrain}
-      onTileClick={canSpawn ? spawn : undefined}
-      players={player ? [player] : []}
-      encounter={
-        encounter ? (
-          <EncounterScreen monsterName={monster?.name ?? "MissingNo"} monsterEmoji={monster?.emoji ?? "💱"} />
-        ) : undefined
-      }
-    />
-  );
-};
+const encounter_contain = await obelisk.containEntity(WORLD_ID, 'encounter', obelisk.getAddress());
 ```
 
 </CollapseCode>
@@ -811,147 +622,24 @@ The encounter screen already has a “Throw” button displayed, we just need to
 
 <CollapseCode>
 
-```ts filename="createSystemCalls.ts" {11,107-125} copy showLineNumbers
-import { Has, HasValue, getComponentValue, runQuery } from "@latticexyz/recs";
-import { uuid, awaitStreamValue } from "@latticexyz/utils";
-import { MonsterCatchResult } from "../monsterCatchResult";
-import { ClientComponents } from "./createClientComponents";
-import { SetupNetworkResult } from "./setupNetwork";
+```ts filename="PVPModal.ts"
+const obelisk = new Obelisk({
+    networkType: NETWORK,
+    packageId: PACKAGE_ID,
+    metadata: contractMetadata
+});
 
-export type SystemCalls = ReturnType<typeof createSystemCalls>;
-
-export function createSystemCalls(
-  { playerEntity, singletonEntity, worldSend, txReduced$ }: SetupNetworkResult,
-  { encounter, MapConfig, MonsterCatchAttempt, Obstruction, Player, Position }: ClientComponents
-) {
-  const wrapPosition = (x: number, y: number) => {
-    const mapConfig = getComponentValue(MapConfig, singletonEntity);
-    if (!mapConfig) {
-      throw new Error("mapConfig no yet loaded or initialized");
-    }
-    return [(x + mapConfig.width) % mapConfig.width, (y + mapConfig.height) % mapConfig.height];
-  };
-
-  const isObstructed = (x: number, y: number) => {
-    return runQuery([Has(Obstruction), HasValue(Position, { x, y })]).size > 0;
-  };
-
-  const moveTo = async (inputX: number, inputY: number) => {
-    if (!playerEntity) {
-      throw new Error("no player");
-    }
-
-    const inEncounter = !!getComponentValue(encounter, playerEntity);
-    if (inEncounter) {
-      console.warn("cannot move while in encounter");
-      return;
-    }
-
-    const [x, y] = wrapPosition(inputX, inputY);
-    if (isObstructed(x, y)) {
-      console.warn("cannot move to obstructed space");
-      return;
-    }
-
-    const positionId = uuid();
-    Position.addOverride(positionId, {
-      entity: playerEntity,
-      value: { x, y },
-    });
-
-    try {
-      const tx = await worldSend("move", [x, y]);
-      await awaitStreamValue(txReduced$, (txHash) => txHash === tx.hash);
-    } finally {
-      Position.removeOverride(positionId);
-    }
-  };
-
-  const moveBy = async (deltaX: number, deltaY: number) => {
-    if (!playerEntity) {
-      throw new Error("no player");
-    }
-
-    const playerPosition = getComponentValue(Position, playerEntity);
-    if (!playerPosition) {
-      console.warn("cannot moveBy without a player position, not yet spawned?");
-      return;
-    }
-
-    await moveTo(playerPosition.x + deltaX, playerPosition.y + deltaY);
-  };
-
-  const spawn = async (inputX: number, inputY: number) => {
-    if (!playerEntity) {
-      throw new Error("no player");
-    }
-
-    const canSpawn = getComponentValue(Player, playerEntity)?.value !== true;
-    if (!canSpawn) {
-      throw new Error("already spawned");
-    }
-
-    const [x, y] = wrapPosition(inputX, inputY);
-    if (isObstructed(x, y)) {
-      console.warn("cannot spawn on obstructed space");
-      return;
-    }
-
-    const positionId = uuid();
-    Position.addOverride(positionId, {
-      entity: playerEntity,
-      value: { x, y },
-    });
-    const playerId = uuid();
-    Player.addOverride(playerId, {
-      entity: playerEntity,
-      value: { value: true },
-    });
-
-    try {
-      const tx = await worldSend("spawn", [x, y]);
-      await awaitStreamValue(txReduced$, (txHash) => txHash === tx.hash);
-    } finally {
-      Position.removeOverride(positionId);
-      Player.removeOverride(playerId);
-    }
-  };
-
-  const throwBall = async () => {
-    const player = playerEntity;
-    if (!player) {
-      throw new Error("no player");
-    }
-
-    const encounter = getComponentValue(encounter, player);
-    if (!encounter) {
-      throw new Error("no encounter");
-    }
-
-    const tx = await worldSend("throwBall", []);
-    await awaitStreamValue(txReduced$, (txHash) => txHash === tx.hash);
-
-    const catchAttempt = getComponentValue(MonsterCatchAttempt, player);
-    if (!catchAttempt) {
-      throw new Error("no catch attempt found");
-    }
-
-    return catchAttempt.result as MonsterCatchResult;
-  };
-
-  const fleeEncounter = async () => {
-    // TODO
-    return null as any;
-  };
-
-  return {
-    moveTo,
-    moveBy,
-    spawn,
-    throwBall,
-    fleeEncounter,
-  };
-}
+let tx = new TransactionBlock();
+let params = [tx.pure(WORLD_ID), tx.pure('0x6')];
+(await obelisk.tx.encounter_system.throw_ball(tx, params, undefined, true)) as TransactionResult;
+const response = await wallet.signAndExecuteTransactionBlock({
+    transactionBlock: tx,
+    options: {
+    showEffects: true,
+    showObjectChanges: true,
+},
+});
+console.log(response);
 ```
 
 </CollapseCode>
@@ -1031,147 +719,25 @@ Because the encounter screen is shown only when you're in an encounter, you'll s
 
 <CollapseCode>
 
-```ts filename="createSystemCalls.ts" {129-130} copy showLineNumbers
-import { Has, HasValue, getComponentValue, runQuery } from "@latticexyz/recs";
-import { uuid, awaitStreamValue } from "@latticexyz/utils";
-import { MonsterCatchResult } from "../monsterCatchResult";
-import { ClientComponents } from "./createClientComponents";
-import { SetupNetworkResult } from "./setupNetwork";
+```ts filename="createSystemCalls.ts"
+const obelisk = new Obelisk({
+    networkType: NETWORK,
+    packageId: PACKAGE_ID,
+    metadata: contractMetadata,
+});
 
-export type SystemCalls = ReturnType<typeof createSystemCalls>;
+let tx = new TransactionBlock();
+let params = [tx.pure(WORLD_ID)];
+(await obelisk.tx.encounter_system.flee(tx, params, undefined, true)) as TransactionResult;
 
-export function createSystemCalls(
-  { playerEntity, singletonEntity, worldSend, txReduced$ }: SetupNetworkResult,
-  { encounter, MapConfig, MonsterCatchAttempt, Obstruction, Player, Position }: ClientComponents
-) {
-  const wrapPosition = (x: number, y: number) => {
-    const mapConfig = getComponentValue(MapConfig, singletonEntity);
-    if (!mapConfig) {
-      throw new Error("mapConfig no yet loaded or initialized");
-    }
-    return [(x + mapConfig.width) % mapConfig.width, (y + mapConfig.height) % mapConfig.height];
-  };
-
-  const isObstructed = (x: number, y: number) => {
-    return runQuery([Has(Obstruction), HasValue(Position, { x, y })]).size > 0;
-  };
-
-  const moveTo = async (inputX: number, inputY: number) => {
-    if (!playerEntity) {
-      throw new Error("no player");
-    }
-
-    const inEncounter = !!getComponentValue(encounter, playerEntity);
-    if (inEncounter) {
-      console.warn("cannot move while in encounter");
-      return;
-    }
-
-    const [x, y] = wrapPosition(inputX, inputY);
-    if (isObstructed(x, y)) {
-      console.warn("cannot move to obstructed space");
-      return;
-    }
-
-    const positionId = uuid();
-    Position.addOverride(positionId, {
-      entity: playerEntity,
-      value: { x, y },
-    });
-
-    try {
-      const tx = await worldSend("move", [x, y]);
-      await awaitStreamValue(txReduced$, (txHash) => txHash === tx.hash);
-    } finally {
-      Position.removeOverride(positionId);
-    }
-  };
-
-  const moveBy = async (deltaX: number, deltaY: number) => {
-    if (!playerEntity) {
-      throw new Error("no player");
-    }
-
-    const playerPosition = getComponentValue(Position, playerEntity);
-    if (!playerPosition) {
-      console.warn("cannot moveBy without a player position, not yet spawned?");
-      return;
-    }
-
-    await moveTo(playerPosition.x + deltaX, playerPosition.y + deltaY);
-  };
-
-  const spawn = async (inputX: number, inputY: number) => {
-    if (!playerEntity) {
-      throw new Error("no player");
-    }
-
-    const canSpawn = getComponentValue(Player, playerEntity)?.value !== true;
-    if (!canSpawn) {
-      throw new Error("already spawned");
-    }
-
-    const [x, y] = wrapPosition(inputX, inputY);
-    if (isObstructed(x, y)) {
-      console.warn("cannot spawn on obstructed space");
-      return;
-    }
-
-    const positionId = uuid();
-    Position.addOverride(positionId, {
-      entity: playerEntity,
-      value: { x, y },
-    });
-    const playerId = uuid();
-    Player.addOverride(playerId, {
-      entity: playerEntity,
-      value: { value: true },
-    });
-
-    try {
-      const tx = await worldSend("spawn", [x, y]);
-      await awaitStreamValue(txReduced$, (txHash) => txHash === tx.hash);
-    } finally {
-      Position.removeOverride(positionId);
-      Player.removeOverride(playerId);
-    }
-  };
-
-  const throwBall = async () => {
-    const player = playerEntity;
-    if (!player) {
-      throw new Error("no player");
-    }
-
-    const encounter = getComponentValue(encounter, player);
-    if (!encounter) {
-      throw new Error("no encounter");
-    }
-
-    const tx = await worldSend("throwBall", []);
-    await awaitStreamValue(txReduced$, (txHash) => txHash === tx.hash);
-
-    const catchAttempt = getComponentValue(MonsterCatchAttempt, player);
-    if (!catchAttempt) {
-      throw new Error("no catch attempt found");
-    }
-
-    return catchAttempt.result as MonsterCatchResult;
-  };
-
-  const fleeEncounter = async () => {
-    const tx = await worldSend("flee", []);
-    await awaitStreamValue(txReduced$, (txHash) => txHash === tx.hash);
-  };
-
-  return {
-    moveTo,
-    moveBy,
-    spawn,
-    throwBall,
-    fleeEncounter,
-  };
-}
+const response = await wallet.signAndExecuteTransactionBlock({
+    transactionBlock: tx,
+    options: {
+    showEffects: true,
+    showObjectChanges: true,
+},
+});
+console.log(response);
 ```
 
 </CollapseCode>
