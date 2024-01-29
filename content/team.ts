@@ -1,4 +1,9 @@
 const TURBO_TEAM: Record<string, AuthorDetails> = {
+  web3henry: {
+    name: "henry",
+    twitterUsername: "web3henry",
+    picture: "/images/people/web3henry.png",
+  },
   jaredpalmer: {
     name: "Jared Palmer",
     twitterUsername: "jaredpalmer",
