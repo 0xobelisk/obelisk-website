@@ -154,8 +154,10 @@ module constantinople::deploy_hook {
     public fun deploy_hook_for_testing(world: &mut World, admin_cap: &AdminCap){
         run(world, admin_cap)
     }
+
 }
-    ```
+
+`````
 
 </CollapseCode>
 
@@ -163,7 +165,7 @@ Then let's update the `register` method in `map_system.sol` to include the `enco
 
 <CollapseCode>
 
-```move filename="map_system.move" {25} copy showLineNumbers
+````move filename="map_system.move" {25} copy showLineNumbers
     module constantinople::map_system {
     use sui::tx_context::TxContext;
     use sui::tx_context;
@@ -417,7 +419,8 @@ We're almost ready start an encounter.
         delta_x + delta_y
     }
 }
-```
+`````
+
 </CollapseCode>
 
 Then let’s query to see if the player is in an encounter and, if so, get the monster type and render the `EncounterScreen`. Add the code below to `GameBoard.tsx`.
@@ -537,6 +540,7 @@ export default obeliskConfig = {
         },
 }} as ObeliskConfig;
 ```
+
 </CollapseCode>
 
 Next we’ll implement a way for the player to throw an ball and capture the monster. `map_system.sol` is getting crowded, and is concerned with logic that affects the map, so we can start up a new system here. Let’s call it `encounter_system.sol` and add the first method, `throw_ball`.
@@ -629,11 +633,11 @@ const obelisk = new Obelisk({
     metadata: contractMetadata
 });
 
-let tx = new TransactionBlock();
-let params = [tx.pure(WORLD_ID), tx.pure('0x6')];
+let tx = new Transaction();
+let params = [tx.object(WORLD_ID), tx.pure.address('0x6')];
 (await obelisk.tx.encounter_system.throw_ball(tx, params, undefined, true)) as TransactionResult;
-const response = await wallet.signAndExecuteTransactionBlock({
-    transactionBlock: tx,
+const response = await wallet.signAndExecuteTransaction({
+    transaction: tx,
     options: {
     showEffects: true,
     showObjectChanges: true,
@@ -708,8 +712,10 @@ module constantinople::encounter_system {
 
         encounter_schema::remove(world, player);
     }
+
 }
-    ```
+
+````
 
 </CollapseCode>
 
@@ -726,19 +732,19 @@ const obelisk = new Obelisk({
     metadata: contractMetadata,
 });
 
-let tx = new TransactionBlock();
-let params = [tx.pure(WORLD_ID)];
+let tx = new Transaction();
+let params = [tx.object(WORLD_ID)];
 (await obelisk.tx.encounter_system.flee(tx, params, undefined, true)) as TransactionResult;
 
-const response = await wallet.signAndExecuteTransactionBlock({
-    transactionBlock: tx,
+const response = await wallet.signAndExecuteTransaction({
+    transaction: tx,
     options: {
     showEffects: true,
     showObjectChanges: true,
 },
 });
 console.log(response);
-```
+````
 
 </CollapseCode>
 

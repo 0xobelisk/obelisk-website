@@ -19,7 +19,6 @@ When the world contract is deployed successfully, it will return a PackageId (th
 
 We create a Project called Counter and declare sigleton schema called counter, which is of type `u64` and has an initial value of `0`.
 
-
 ```typescript
 import { ObeliskConfig } from '@0xobelisk/common';
 
@@ -60,7 +59,6 @@ module counter::counter_system {
 
 Finally we deploy the complete contract to devnet
 
-
 ```bash
 obelisk publish --network devnet --configPath obelisk.config.ts
 ```
@@ -70,12 +68,12 @@ We'll get the `packageId` and `worldId` on the command line.
 ### Init Obelisk Client
 
 ```typescript
-import { getMetadata, Obelisk, NetworkType } from "@0xobelisk/client";
+import { loadMetadata, Obelisk, NetworkType } from "@0xobelisk/sui-client";
 
 const network = "devnet" as NetworkType
 const packageId = "0x804578b9eed47d461bba52c393cf148302819e2ba0a0f558356cc419b3e941ed"
 
-const metadata = await getMetadata(network, packageId);
+const metadata = await loadMetadata(network, packageId);
 
 const obelisk = new Obelisk({
     networkType: network,
@@ -85,14 +83,31 @@ const obelisk = new Obelisk({
 });
 ```
 
-### World Tx
+`loadMetadata(network, packageId)` fetches the contract's metadata information by querying the Sui API.
+And you can pre-save the metadata locally and import it directly from a file. This approach offers the advantage of reducing network requests, thereby enhancing service response times.
+
+```typescript
+import metadata from './metadata.json';
+
+const network = "devnet" as NetworkType
+const packageId = "0x804578b9eed47d461bba52c393cf148302819e2ba0a0f558356cc419b3e941ed"
+
+const obelisk = new Obelisk({
+    networkType: network,
+    packageId: packageId,
+    metadata: metadata,
+    secretKey: privkey
+});
+```
+
+### Tx
 
 If you need to call a method in the system, you can do so using the `obelisk.tx.moudleName.funcName()` form.
 
 ```typescript
-import { getMetadata, Obelisk, TransactionBlock } from "@0xobelisk/client";
+import { loadMetadata, Obelisk, Transaction } from "@0xobelisk/sui-client";
 
-const metadata = await getMetadata(network, packageId);
+const metadata = await loadMetadata(network, packageId);
 
 const obelisk = new Obelisk({
     networkType: network,
@@ -102,9 +117,9 @@ const obelisk = new Obelisk({
 });
 
 // Initiate transactions through the account set up by obelisk
-const tx = new TransactionBlock()
+const tx = new Transaction()
 
-const world = tx.pure(WORLD_ID)
+const world = tx.object(WORLD_ID)
 const params = [
     world,
 ]
@@ -112,8 +127,8 @@ const params = [
 const res_tx = await obelisk.tx.counter_system.inc(tx, params)
 
 // If you want to encapsulate the TransactionBlock
-const tx = new TransactionBlock()
-const world = tx.pure(WORLD_ID)
+const tx = new Transaction()
+const world = tx.object(WORLD_ID)
 const params = [
     world,
 ]
@@ -128,123 +143,48 @@ const response = await obelisk.signAndSendTxn(
 )
 ```
 
-### World Query
+### Query
 
 #### Query public contract view func
 
 If your system method provides a method with no modification status and a return, then you can query it via `obelisk.query.moudleName.funcName()`.
 
 ```typescript
-const metadata = await getMetadata(NETWORK, PACKAGE_ID);
+const metadata = await loadMetadata(NETWORK, PACKAGE_ID);
 const obelisk = new Obelisk({
     networkType: NETWORK,
     packageId: PACKAGE_ID,
     metadata: metadata,
 });
 
-const tx = new TransactionBlock()
-const world = tx.pure(WORLD_ID)
+const tx = new Transaction()
+const world = tx.object(WORLD_ID)
 const params = [
     world,
 ]
 const query_value = await obelisk.query.counter_system.get(tx, params);
 ```
 
-#### Get world
+#### Formatting Query Results (BCS Return Value Format)
 
-Queries the Object information of worldId.
-
-```typescript
-    const metadata = await getMetadata(NETWORK, PACKAGE_ID);
-    const obelisk = new Obelisk({
-        networkType: NETWORK,
-        packageId: PACKAGE_ID,
-        metadata: metadata,
-    });
-    const world_value = await obelisk.getWorld(WORLD_ID)
-```
-
-
-#### List schema names
-
-List all schema name in the world store.
+We implement the query contract method functionality through `DevInspect`. The return value is a `BCS-encoded` byte array. To convert these bytes into a readable format, we need to perform BCS decoding. We can use `obelisk.view()` to directly decode the BCS data.
 
 ```typescript
-const metadata = await getMetadata(NETWORK, PACKAGE_ID);
-const obelisk = new Obelisk({
-    networkType: NETWORK,
-    packageId: PACKAGE_ID,
-    metadata: metadata,
-});
-const schemaNames = await obelisk.listSchemaNames(
-  '0x1541f3a2e7ac48e3e68e60bb97a7cee94e16316cc3f9043a9c0f5e6790ea3af0'
-);
-```
-
-
-#### Get entity
-
-Get the entity's data based on schema name and entity id(option).
-
-```typescript
-const metadata = await getMetadata(NETWORK, PACKAGE_ID);
+const metadata = await loadMetadata(NETWORK, PACKAGE_ID);
 const obelisk = new Obelisk({
     networkType: NETWORK,
     packageId: PACKAGE_ID,
     metadata: metadata,
 });
 
-const worldId = "0x1541f3a2e7ac48e3e68e60bb97a7cee94e16316cc3f9043a9c0f5e6790ea3af0";
+const tx = new Transaction()
+const world = tx.object(WORLD_ID)
+const params = [
+    world,
+]
+const query_value = (await obelisk.query.counter_system.get(tx, params)) as DevInspectResults;
 
-// get schema entity data
-const schemaName = "simple_schema"
-const entityId = "0x00000000000000000000000000000000000000000000000000000000000003ed"
-const entities = await obelisk.getEntity(
-    worldId,
-    schemaName,
-    entityId
-);
-
-// get singleton schema entity data
-const singletonSchemaName = "counter"
-const entities = await obelisk.getEntity(
-    worldId,
-    singletonSchemaName
-);
-
-```
-
-
-#### Contain entity
-
-Determine if the entity exists
-
-```typescript
-const metadata = await getMetadata(NETWORK, PACKAGE_ID);
-const obelisk = new Obelisk({
-    networkType: NETWORK,
-    packageId: PACKAGE_ID,
-    metadata: metadata,
-});
-
-const worldId = "0x1541f3a2e7ac48e3e68e60bb97a7cee94e16316cc3f9043a9c0f5e6790ea3af0";
-
-// get schema entity data
-const schemaName = "simple_schema"
-const entityId = "0x00000000000000000000000000000000000000000000000000000000000003ed"
-const entities = await obelisk.containEntity(
-    worldId,
-    schemaName,
-    entityId
-);
-
-// get singleton schema entity data
-const singletonSchemaName = "counter"
-const entities = await obelisk.containEntity(
-    worldId,
-    singletonSchemaName
-);
-
+const bcs_decode_data = obelisk.view(query_value);
 ```
 
 #### Get owned objects
@@ -252,7 +192,7 @@ const entities = await obelisk.containEntity(
 Query all the objects under the current worldId that are owned by a certain address.
 
 ```typescript
-const metadata = await getMetadata(NETWORK, PACKAGE_ID);
+const metadata = await loadMetadata(NETWORK, PACKAGE_ID);
 const obelisk = new Obelisk({
     networkType: NETWORK,
     packageId: PACKAGE_ID,
@@ -269,13 +209,12 @@ You can customize how the key is generated in the system, but I recommend that y
 
 We provide three ways to convert entity keys, and of course you are welcome to contribute more entity key specifications.
 
-
 ```typescript
 // Create key based on objectId.
-// You can use the user's address as the entity key, 
+// You can use the user's address as the entity key,
 // or you can use the Id of an object as the entity key.
 //
-// For example: using the objectId of the NFT as the key, 
+// For example: using the objectId of the NFT as the key,
 // you can set the owner of the nft as the owner of the accessed entity.
 let objectAddress = await obelisk.entity_key_from_object(
     '0x1541f3a2e7ac48e3e68e60bb97a7cee94e16316cc3f9043a9c0f5e6790ea3af0'
@@ -287,4 +226,3 @@ let bytesAddress = await obelisk.entity_key_from_bytes('hello');
 // hexAddress(inputNumberData)
 let numberAddress = await obelisk.entity_key_from_u256(123);
 ```
-

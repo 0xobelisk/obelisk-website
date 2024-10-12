@@ -45,10 +45,10 @@ export default obeliskConfig = {
 </CollapseCode>
 
 You can generate the corresponding Schemas by executing the following commands
+
 ```bash copy
 pnpm run worldgen
 ```
-
 
 ## 1.2. Create the system and its methods
 
@@ -101,7 +101,7 @@ Next we’ll add the **move method** to `map_system.move`. This will allow us to
 
 <CollapseCode>
 
-```move filename="map_system.move" {23-31} copy showLineNumbers
+````move filename="map_system.move" {23-31} copy showLineNumbers
 module constantinople::map_system {
     use sui::tx_context::TxContext;
     use sui::tx_context;
@@ -158,7 +158,7 @@ We’ll fill in the `move_to` methods in our map.
     metadata: contractMetadata,
     // secretKey: PRIVATEKEY,
 });
-    const stepTxB = new TransactionBlock();
+    const stepTxB = new Transaction();
     let tx_world_id = stepTxB.pure(WORLD_ID);
     let tx_clock = stepTxB.pure('0x6');
 
@@ -169,8 +169,8 @@ We’ll fill in the `move_to` methods in our map.
 }
 
     try {
-    const response = await wallet.signAndExecuteTransactionBlock({
-    transactionBlock: stepTxB,
+    const response = await wallet.signAndExecuteTransaction({
+    transaction: stepTxB,
     options: {
     showEffects: true,
     showObjectChanges: true,
@@ -181,7 +181,7 @@ We’ll fill in the `move_to` methods in our map.
     alert('failed');
     console.error('failed', e);
 }
-```
+````
 
 </CollapseCode>
 
