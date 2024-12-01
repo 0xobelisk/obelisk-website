@@ -24,101 +24,118 @@ export const dubheConfig = {
 
 To generate the schemas, run `pnpm obelisk schemagen ./dubhe.config.ts` in the same folder as the config file.
 
-### Schema Type
+### Schema Data
 
-Requires developer-defined entity_key. Obelisk will provide some common methods for generating keys.
-
-Currently, the schema supports five types, and will be added later according to the demand.
-
-#### schema with a single column
-
-The following three approaches work in the same way
+Currently, Schema supports all the basic types of Move, and will be added later according to the demand.
 
 ```tsx
 export const dubheConfig = {
   name: "example",
   description: "example desc",
   schemas: {
-      single_column1: {
-          valueType: "vector<u8>"
-      },
-      single_column2: "vector<u8>",
-      single_column3: {
-          valueType: {
-              name: "vector<u8>"
-          }
-      }
+    student_management: {
+        data: [
+          {
+              name: "Class",
+              fields: {
+                    name: "string",
+                    teacher: "string",
+              },
+          },
+          {
+              name: "Student",
+              fields: {
+                    name: "string",
+                    age: "u8",
+                    class: "Class",
+              },
+         }
+      ]
+    }
+  },
+} as DubheConfig;
+```
+### Schema structure
+
+Schema currently supports three storage structures, StorageValue, StorageMap, StorageDoubleMap.
+
+```tsx
+export const dubheConfig = {
+  name: "example",
+  description: "example desc",
+  schemas: {
+    student_management: {
+        data: [
+          {
+              name: "Class",
+              fields: {
+                    name: "string",
+                    teacher: "string",
+              },
+          },
+          {
+              name: "Student",
+              fields: {
+                    name: "string",
+                    age: "u8",
+                    class: "Class",
+              },
+         }
+      ],
+    structure: {
+         next_student_id: 'StorageValue<u32>',
+         student_info: 'StorageMap<u32, Student>',
+     }
+    }
   },
 } as DubheConfig;
 ```
 
-#### schema with a multi column
+### Schema events
 
 ```tsx
 export const dubheConfig = {
   name: "example",
   description: "example desc",
   schemas: {
-      multi_column: {
-          valueType: {
-            name: "vector<u8>",
-            age: "u8",
-            sex: "bool"
-        }
-      }
+    student_management: {
+        data: [
+          {
+              name: "Class",
+              fields: {
+                    name: "string",
+                    teacher: "string",
+              },
+          },
+          {
+              name: "Student",
+              fields: {
+                    name: "string",
+                    age: "u8",
+                    class: "Class",
+              },
+         }
+      ],
+        structure: {
+         next_student_id: 'StorageValue<u32>',
+         student_info: 'StorageMap<u32, Student>',
+     },
+        events: [
+            {
+                name: "StudentAdded",
+                fields: {
+                        student_id: "u32",
+                        student: "Student",
+                },
+            },
+            {
+                name: "StudentRemoved",
+                fields: {
+                        student_id: "u32",
+                },
+            },
+        ]
+    }
   },
-} as DubheConfig;
-```
-
-#### schema with a single value
-
-```tsx
-export const dubheConfig = {
-  name: "example",
-  description: "example desc",
-  schemas: {
-      single_value: {
-        valueType: "u64",
-        defaultValue: 10
-    }
-  }
-} as DubheConfig;
-```
-
-#### schema with a single struct
-
-```tsx
-export const dubheConfig = {
-  name: "example",
-  description: "example desc",
-  schemas: {
-      single_struct: {
-        valueType: {
-             admin: "address",
-             fee: "u64",
-        },
-        defaultValue: {
-            admin: "0x1",
-            fee: "100",
-        }
-    }
-  }
-} as DubheConfig;
-```
-
-#### ephemeral schema
-
-```tsx
-export const dubheConfig = {
-  name: "example",
-  description: "example desc",
-  schemas: {
-      ephemeral_schema: {
-        ephemeral: true,
-        valueType: {
-             result: "u8",
-        },
-    }
-  }
 } as DubheConfig;
 ```
