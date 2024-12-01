@@ -18,62 +18,48 @@ Assume the following configuration exists.
 import { DubheConfig } from "@0xobelisk/common";
 
 export const dubheConfig = {
-  name: "examples",
-  description: "examples",
-  systems: [
-    "example_system",
-  ],
+  name: "example",
+  description: "example desc",
   schemas: {
-    single_column: "u64",
-    multi_column: {
-      valueType: {
-        state: "vector<u8>",
-        last_set_time: "u64",
-      }
-    },
-    ephemeral: {
-      ephemeral: true,
-      valueType: "u64",
-    },
-    single_value: {
-      valueType: "u64",
-      defaultValue: 1000
-    },
-    single_struct: {
-      valueType: {
-        admin: "address",
-        fee: "u64",
-      },
-      defaultValue: {
-        admin: "0x1",
-        fee: 100,
-      }
-    },
-    single_struct_temp: {
-      valueType: {
-        addr_list: "vector<address>",
-        bool_list: "vector<bool>",
-        name: "string",
-        name_list: "vector<string>",
-        map: "vector<vector<u8>>",
-      },
-      defaultValue: {
-        addr_list: [
-          "0x1804b821bba181110599b8757008eabe6f89f62774d7fafb5ee666ac742a41f8",
-          "0x341ede3aa40e29d6716ce92b2fdb977be5ac1129aa43eb024a8b5a9478204fe2",
-          "0x34ea3ab186a2b8f217a71301ae447e01e9aa3e22bd4bc827f45a3a2f5381d9c4",
-          "0x4f42679d98cd10fbc3daf9996a40e1bb9213315680489b978fe1681b7f00091d",
-        ],
-        bool_list: [true, false, true],
-        name: "tom",
-        name_list: ["bob", "alice", "tom"],
-        map: [
-          [1, 2, 3, 4, 5],
-          [1, 35, 5, 6, 7, 9],
-        ],
-      }
+    student_management: {
+        data: [
+          {
+              name: "Class",
+              fields: {
+                    name: "string",
+                    teacher: "string",
+              },
+          },
+          {
+              name: "Student",
+              fields: {
+                    name: "string",
+                    age: "u8",
+                    class: "Class",
+              },
+         }
+      ],
+        structure: {
+         next_student_id: 'StorageValue<u32>',
+         student_info: 'StorageMap<u32, Student>',
+     },
+        events: [
+            {
+                name: "StudentAdded",
+                fields: {
+                        student_id: "u32",
+                        student: "Student",
+                },
+            },
+            {
+                name: "StudentRemoved",
+                fields: {
+                        student_id: "u32",
+                },
+            },
+        ]
     }
-  }
+  },
 } as DubheConfig;
 ```
 
@@ -81,50 +67,37 @@ It's a good idea to make a contains judgement before adding and removing records
 
 **Existence of a record**
 
-```rust
-// single_column
-let is_exist = single_column_schema::contains(&world, entity_key);
-
-// multi_column
-let is_exist = multi_column_schema::contains(&world, entity_key);
+```sui move
+student_management.borrow_next_student_id().contains_key()
+student_management.borrow_student_info().contains_key(0)
 ```
 
 **Adding a record && Updating a record**
 
 ```rust
-// Adding a field
-// args: world, entity_key, name, age, sex
-// entity_key::from_u256() or entity_key::from_object() or entity_key::from_bytes() or customisation
+student_management.borrow_mut_next_student_id().set(0);
+student_management.borrow_mut_student_info().set(
+    0,
+    student_management_student::new(
+        "Bob",
+        10,
+        student_management_class::new("Class 1", "Bob teacher")
+));
 
-// single_column
-single_column_schema::set(&mut world, entity_key, "Alice plus");
-
-// multi_column
-multi_column_schema::set(&mut world, entity_key, "Bob plus", 10, false);
-multi_column_schema::set_name(&mut world, entity_key, "Bob plus");
-multi_column_schema::set_age(&mut world, entity_key, 11);
-multi_column_schema::set_sex(&mut world, entity_key, true);
-
-// single_value
-single_value_schema::set(&mut world, 11);
-
-// single_struct
-single_struct_schema::set(&mut world, 0x2, 100);
-single_struct_schema::set_admin(&mut world, 0x2);
-single_struct_schema::set_fee(&mut world, 100);
-
-// ephemeral schema
-ephemeral::emit_ephemeral(10);
+// update
+student_management.borrow_mut_student_info().mutate!(0, |student| {
+    *student = student_management_student::new(
+        "Bob",
+        10,
+        student_management_class::new("Class 1", "Bob teacher")
+)});
 ```
 
 **Deleting a record**
 
 ```rust
-// single_column
-single_column_schema::remove(&mut world, entity_key);
-
-// multi_column
-multi_column_schema::remove(&mut world, entity_key);
+student_management.borrow_mut_next_student_id().remove();
+student_management.borrow_mut_student_info().remove(0);
 ```
 
 **Retrieving a record**
@@ -132,20 +105,8 @@ multi_column_schema::remove(&mut world, entity_key);
 Make sure the record exists before getting
 
 ```rust
-// single_column
-let name = single_column_schema::get(&world, entity_key);
-
-// multi_column
-let (name, age, sex) = multi_column_schema::get(&world, entity_key, "Bob plus", 10, false);
-let name = multi_column_schema::get_name(&world, entity_key);
-let age = multi_column_schema::get_age(&world, entity_key);
-let sex = multi_column_schema::get_sex(&world, entity_key);
-
-// single_value
-let number = single_value_schema::get(&world);
-
-// single_struct
-let (admin, fee) = single_struct_schema::get(&world);
-let admin = single_struct_schema::get_admin(&world);
-let fee = single_struct_schema::get_fee(&world);
+let next_student_id = student_management.borrow_next_student_id().get();
+let maybe_next_student_id = student_management.borrow_next_student_id().try_get();
+let student = student_management.borrow_student_info().get(0);
+let maybe_student = student_management.borrow_student_info().try_get(0);
 ```
