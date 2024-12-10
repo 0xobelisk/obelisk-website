@@ -1,0 +1,404 @@
+import { CollapseCode } from "../../../../../components/CollapseCode";
+
+# Use dubhe to develop a contract
+
+The template has generated two contract folders for you, and you can see:
+-  contracts/
+    - counter: According to dubhe.config.ts configuration, the counter contract is generated. You can modify dubhe.config.ts to help you generate your own contract.
+    - dubhe-framework: The Dubhe framework contract, you do not need to modify it.
+
+Now let's remove counter contract and re-complete the development of the counter. The counter has only one function, to add the original number content to the inputted number.
+
+```bash
+rm -rf contracts/counter
+```
+
+Dubhe generates some code based on the dubhe.config.ts configuration, so we just need to focus on this file.
+
+Delete some code from dubhe.config.ts and the final content is as follows, which you can globally copy into the dubhe.config.ts file
+
+```ts
+import { DubheConfig } from '@0xobelisk/sui-common';
+export const dubheConfig = {
+	name: 'counter',
+	description: 'counter contract',
+	schemas: {},
+} as DubheConfig;
+```
+Let's go over what's in dubheConfig
+- name: The name of the contract project.
+- description: The description of the contract project.
+- schemas: The schema of the contract project. Refer to the Schemas section for details of schema.
+
+To complete counter contract I need a Schema to store the numbers, now let's complete the Schema.
+
+<CollapseCode>
+```ts filename="dubhe.config.ts" {6-10} copy showLineNumbers
+import { DubheConfig } from '@0xobelisk/sui-common';
+export const dubheConfig = {
+	name: 'counter',
+	description: 'counter contract',
+	schemas: {
+		booster: {
+			structure: {
+				value: 'StorageValue<u32>'
+			}
+		}
+	},
+} as DubheConfig;
+```
+</CollapseCode>
+
+The name of this Schema is booster, and he has only one number field with storage type `StorageValue`, which is used to store `u32`.
+
+if the input number == 0, although it will not report an error, but it is a meaningless transaction, so we need to prohibit the input of 0, how to do error handling?
+
+<CollapseCode>
+```ts filename="dubhe.config.ts" {11-13} copy showLineNumbers
+import { DubheConfig } from '@0xobelisk/sui-common';
+
+export const dubheConfig = {
+	name: 'counter',
+	description: 'counter contract',
+	schemas: {
+		booster: {
+			structure: {
+				number: 'StorageValue<u32>'
+			},
+			errors: [
+				{ name: 'InvalidNumber', code: 0 }
+			]
+		}
+	},
+} as DubheConfig;
+
+```
+</CollapseCode>
+
+The error handling code has been added, now we also want to add events to the contract to tell us which number was added.
+<CollapseCode>
+```ts filename="dubhe.config.ts" {14-21} copy showLineNumbers
+
+import { DubheConfig } from '@0xobelisk/sui-common';
+
+export const dubheConfig = {
+	name: 'counter',
+	description: 'counter contract',
+	schemas: {
+		booster: {
+			structure: {
+				number: 'StorageValue<u32>'
+			},
+			errors: [
+				{ name: 'InvalidNumber', code: 0 }
+			],
+			events: [
+				{
+					name: 'Increment',
+					fields: {
+						value: 'u32',
+					},
+				},
+			],
+		}
+	},
+} as DubheConfig;
+
+```
+</CollapseCode>
+
+We're going to use Dubhe's most powerful feature to generate the contract's frame content.
+
+```bash
+ pnpm dubhe schemagen
+ ```
+
+You can see the following output:
+
+```bash
+➜  pnpm dubhe schemagen
+
+    🚀 Starting Schema Generation Process...
+    📋 Project Configuration:
+      ├─ Name: counter
+      ├─ Description: counter contract
+      ├─ Network: localnet
+      └─ Framework ID: 0x417ad1864a56a29ad0b5aaddd2e11bac1eeab6a68883ef53184a4cc5c293fec6
+
+
+    📄 Starting Move.toml Generation...
+      └─ Output path: /Users/wangningbo/Project/dubhe-template-project/contracts/counter/Move.toml
+    ✅ Move.toml Generation Complete
+
+
+    📝 Starting Deploy Hook Generation...
+      └─ Output path: /Users/wangningbo/Project/dubhe-template-project/contracts/counter/sources/scripts/deploy_hook.move
+    ✅ Deploy Hook Generation Complete
+
+
+    📦 Starting Schema Data Generation...
+    ✅ Schema Data Generation Complete
+
+
+    🔨 Starting Schema Structure Generation...
+    ✅ Schema Structure Generation Complete
+
+
+    📦 Starting Schema Event Generation...
+    ✅ Schema Event Generation Complete
+
+
+    📦 Starting Schema Error Generation...
+    ✅ Schema Error Generation Complete
+
+
+    🔑 Starting DappKey Generation...
+      └─ Output path: /Users/wangningbo/Project/dubhe-template-project/contracts/counter/sources/codegen/dapp_key.move
+    ✅ DappKey Generation Complete
+
+
+    🔑 Starting DappKey Generation...
+      └─ Output path: /Users/wangningbo/Project/dubhe-template-project/contracts/counter/sources/codegen/schema_hub.move
+    ✅ DappKey Generation Complete
+
+
+    ⚙️ Starting System Generation...
+      ├─ Generating systems
+         └─ Output path: /Users/wangningbo/Project/dubhe-template-project/contracts/counter/sources/systems
+    ✅ System Generation Complete
+
+    ✅ Schema Generation Process Complete!
+
+```
+
+Take a look at the file structure of counter, we don't need to concern ourselves with anything else but our business code systems folder.
+    ```
+➜  counter tree
+├── Move.toml
+└── sources
+    ├── codegen
+    │       ├── dapp_key.move
+    │       ├── errors
+    │       │        └── booster_error_invalid_number.move
+    │       ├── events
+    │       │       └── booster_event_increment.move
+    │       ├── schema_hub.move
+    │       └── schemas
+    │           └── booster.move
+    ├── scripts
+    │       ├── deploy_hook.move
+    │       └── migrate.move
+    └── systems
+```
+
+A Booster Schema has been generated for you, now you need to write your own business code!
+We create a new move file called digital_booster in the Systems folder.
+
+```bash
+touch contracts/counter/sources/systems/digital_booster.move
+```
+Then write what's inside, we'll write the inc side implementation of storing the number plus the number entered. The contents of the file:
+```sui move
+module counter::digital_booster {
+    use counter::booster_schema::Booster;
+
+    public entry fun inc(booster: &mut Booster, number: u32) {
+
+     }
+}
+```
+
+First we do an error check, the input number must be greater than 0.
+<CollapseCode>
+```sui move filename="dubhe.config.ts" {3, 6-7} copy showLineNumbers
+module counter::digital_booster {
+    use counter::booster_schema::Booster;
+    use counter::booster_error_invalid_number;
+
+    public entry fun inc(booster: &mut Booster, number: u32) {
+         // Check if the increment value is valid. Number must be greater than 0.
+        booster_error_invalid_number::require(number > 0);
+     }
+}
+```
+</CollapseCode>
+
+Secondly need to modify the numbers in storage, you have two ways to do this.
+
+```sui move
+// Method 1
+let old_number = booster.borrow_number().get();
+booster.borrow_mut_number().set(old_number + number);
+
+
+// Method 2
+booster.borrow_mut_number().mutate!(|old_number|
+    *old_number =  *old_number + number
+);
+```
+
+We use the second.
+
+<CollapseCode>
+    ```sui move filename="dubhe.config.ts" {9-12} copy showLineNumbers
+module counter::digital_booster {
+    use counter::booster_schema::Booster;
+    use counter::booster_error_invalid_number;
+
+    public entry fun inc(booster: &mut Booster, number: u32) {
+        // Check if the increment value is valid. number must be greater than 0.
+        booster_error_invalid_number::require(number > 0);
+
+        //  Increment the number.
+        // let old_number = booster.borrow_number().get();
+        // booster.borrow_mut_number().set(old_number + number);
+        booster.borrow_mut_number().mutate!(|old_number| *old_number =  *old_number + number);
+    }
+
+}
+```
+</CollapseCode>
+
+Finally we add events to the contract.
+<CollapseCode>
+    ```sui move filename="dubhe.config.ts" {15-16} copy showLineNumbers
+module counter::digital_booster {
+    use counter::booster_schema::Booster;
+    use counter::booster_error_invalid_number;
+    use counter::booster_event_increment;
+
+    public entry fun inc(booster: &mut Booster, number: u32) {
+        // Check if the increment value is valid. number must be greater than 0.
+        booster_error_invalid_number::require(number > 0);
+
+        //  Increment the number.
+        // let old_number = booster.borrow_number().get();
+        // booster.borrow_mut_number().set(old_number + number);
+        booster.borrow_mut_number().mutate!(|old_number| *old_number =  *old_number + number);
+
+        // Emit an event to notify the increment.
+        booster_event_increment::emit(number);
+    }
+
+}
+```
+</CollapseCode>
+By this point we need to write the contents of the deploy_hook, which will be automatically executed for you when the contract is deployed, now we initialise the number in the store to 10.
+
+    ```bash
+dubhe-template-project/contracts/counter/sources/scripts/deploy_hook.move
+    ```
+
+<CollapseCode>
+    ```sui move filename="dubhe.config.ts" {67} copy showLineNumbers
+#[allow(lint(share_owned))]
+
+  module counter::deploy_hook {
+
+  use dubhe::dapps_schema::Dapps;
+
+  use dubhe::dapps_system;
+
+  use counter::schema_hub::SchemaHub;
+
+  use std::ascii::string;
+
+  use sui::clock::Clock;
+
+  use sui::sui::SUI;
+
+  use sui::coin::Coin;
+
+  use sui::package::UpgradeCap;
+
+  use sui::transfer::public_share_object;
+
+  use counter::booster_schema::Booster;
+
+  #[test_only]
+
+  use sui::clock;
+
+  #[test_only]
+
+  use sui::coin;
+
+  #[test_only]
+
+  use sui::test_scenario;
+
+  #[test_only]
+
+  use sui::package;
+
+  #[test_only]
+
+  use counter::schema_hub;
+
+  #[test_only]
+
+  use dubhe::dapps_schema;
+
+  #[test_only]
+
+  use sui::test_scenario::Scenario;
+
+  public entry fun run(
+    schema_hub: &mut SchemaHub,
+    dapps: &mut Dapps,
+    cap: &UpgradeCap,
+    clock: &Clock,
+    coin: Coin<SUI>,
+    ctx: &mut TxContext,
+  ) {
+    // Register the dapp to dubhe.
+    dapps_system::register(dapps,cap,string(b"counter"),string(b"counter contract"),clock,coin,ctx);
+    // Create schemas
+    let mut booster = counter::booster_schema::create(ctx);
+    // Logic that needs to be automated once the contract is deployed
+
+    booster.borrow_mut_number().set(10);
+
+    // Authorize schemas and public share objects
+    schema_hub.authorize_schema<Booster>();
+    public_share_object(booster);
+  }
+
+  #[test_only]
+
+  public fun deploy_hook_for_testing(): (Scenario, SchemaHub, Dapps) {
+    let mut scenario = test_scenario::begin(@0xA);
+    {
+          let ctx = test_scenario::ctx(&mut scenario);
+          dapps_schema::init_dapps_for_testing(ctx);
+          schema_hub::init_schema_hub_for_testing(ctx);
+          test_scenario::next_tx(&mut scenario,@0xA);
+      };
+    let mut dapps = test_scenario::take_shared<Dapps>(&scenario);
+    let mut schema_hub = test_scenario::take_shared<SchemaHub>(&scenario);
+    let ctx = test_scenario::ctx(&mut scenario);
+    let clock = clock::create_for_testing(ctx);
+    let upgrade_cap = package::test_publish(@0x42.to_id(), ctx);
+    let coin  = coin::mint_for_testing<SUI>(1_000_000_000, ctx);
+    run(&mut schema_hub, &mut dapps, &upgrade_cap, &clock, coin, ctx);
+    clock::destroy_for_testing(clock);
+    upgrade_cap.make_immutable();
+    test_scenario::next_tx(&mut scenario,@0xA);
+    (scenario, schema_hub, dapps)
+  }
+}
+```
+</CollapseCode>
+
+Let's run the Build command to check for syntax errors.
+```bash
+➜  pnpm dubhe build --network localnet
+🚀 Running move build
+Active environment switched to [localnet]
+
+Updated Dubhe dependency in /Users/wangningbo/Project/dubhe-template-project/contracts/counter/Move.toml for localnet.
+INCLUDING DEPENDENCY Dubhe
+INCLUDING DEPENDENCY Sui
+INCLUDING DEPENDENCY MoveStdlib
+BUILDING counter
+```
